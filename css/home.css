@@ -1,0 +1,41 @@
+body {
+    background-image: url('../img/library1.jpg');
+    background-repeat: no-repeat;
+    background-size: cover;
+}
+
+.loginForm {
+    background-color: #E4D9D5;
+    border-radius: 35px;
+}
+
+h2 {
+    font-size: 40px;
+    color: #2C2929;
+    text-align: center;
+}
+
+.labelStyle {
+    color: #2C2929;
+    font-size: 25px;
+}
+
+.inputStyle {
+    height: 35px;
+    width: 15vw;
+}
+
+.logInButton {
+    font-size: 25px;
+    background-color: #7E574E;
+    color: #E4D9D5;
+    border-color: #CAC1B0;
+    width: 8vw;
+}
+
+.logInButton:hover {
+    transform: scale(1.1);
+    background-color: #2C2929;
+    color: #E4D9D5;
+    border: none;
+}

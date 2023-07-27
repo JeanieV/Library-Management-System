@@ -1,0 +1,59 @@
+body {
+    background-color: #AC8E60;
+}
+
+
+.signUpForm {
+    background-color: #E4D9D5;
+    border-radius: 35px;
+    width: 50vw;
+}
+
+h1 {
+    font-size: 50px;
+    text-align: center;
+    color: #2C2929;
+}
+
+h2{
+    font-size: 25px;
+    text-align: center;
+    color: #2C2929;
+}
+
+.labelStyle {
+    color: #2C2929;
+    font-size: 25px;
+}
+
+.inputStyle {
+    height: 35px;
+    width: 15vw;
+}
+
+.logInButton{
+    font-size: 25px;
+    background-color: #7E574E;
+    color: #E4D9D5;
+    border-color: #CAC1B0;
+    width: 9vw;
+}
+
+.logInButton:hover {
+    transform: scale(1.1);
+    background-color: #2C2929;
+    color: #E4D9D5;
+    border: none;
+}
+
+.tranBack {
+    border: none;
+    background-color: transparent;
+    outline: none;
+}
+
+.homeButton{
+    width: 80px;
+    height: 80px;
+    border-radius: 30px;
+}
