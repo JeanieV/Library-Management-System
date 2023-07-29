@@ -11,6 +11,7 @@ if (isset($_POST['returnHome'])) {
 }
 
 
+
 // Database connection function
 function db_connect()
 {
@@ -55,6 +56,20 @@ function creatingUser()
             return;
         }
 
+        // Check if the email already exists in the database
+        $query = "SELECT * FROM member WHERE email = ?";
+        $stmt = mysqli_prepare($mysqli, $query);
+        mysqli_stmt_bind_param($stmt, "s", $email);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_store_result($stmt);
+
+        if (mysqli_stmt_num_rows($stmt) > 0) {
+            echo '<h2>Email already exists. Please use a different email address.</h2>';
+            mysqli_stmt_close($stmt);
+            mysqli_close($mysqli);
+            return;
+        }
+
         // Prepare the insert query with placeholders
         $query = "INSERT INTO member (`username`, `fullname`, `address`, `password`, `email`) VALUES (?, ?, ?, ?, ?)";
 
@@ -79,54 +94,40 @@ function creatingUser()
 
 function userLogin()
 {
-    if (isset($_POST['logInButton'])) { // Check if the 'logInButton' is clicked
+    if (isset($_POST['email']) && isset($_POST['password'])) {
+        $email = $_POST['email'];
+        $password = $_POST['password'];
 
-        if (isset($_POST['email']) && isset($_POST['password'])) {
-            $email = $_POST['email'];
-            $password = $_POST['password'];
+        // Connect to the database
+        $mysqli = db_connect();
+        if (!$mysqli) {
+            return;
+        }
 
-            // Connect to the database
-            $mysqli = db_connect();
-            if (!$mysqli) {
-                return;
-            }
+        // Check if the email already exists in the database
+        $query = "SELECT * FROM member WHERE email = ? AND password = ?";
+        $stmt = mysqli_prepare($mysqli, $query);
+        mysqli_stmt_bind_param($stmt, "ss", $email, $password);
+        mysqli_stmt_execute($stmt);
+        mysqli_stmt_store_result($stmt);
 
-            // Prepare the query to fetch user data by email
-            $query = "SELECT * FROM users WHERE email = ?";
-            $stmt = mysqli_prepare($mysqli, $query);
-
-            // Bind the parameter to the statement
-            mysqli_stmt_bind_param($stmt, "s", $email);
-
-            // Execute the statement
-            mysqli_stmt_execute($stmt);
-
-            // Get the result
-            $result = mysqli_stmt_get_result($stmt);
-
-            // Check if a user with the provided email exists
-            if ($row = mysqli_fetch_assoc($result)) {
-                // Verify the password
-                if (password_verify($password, $row['password'])) {
-                    // Passwords match, login successful
-                    // Redirect to the desired page
-                    header("Location: ./member.php");
-                    exit();
-                } else {
-                    // Passwords don't match, show error message
-                    echo 'Invalid email or password';
-                }
-            } else {
-                // User with the provided email does not exist, redirect to signUp.php
-                header("Location: ./signUp.php");
-                exit();
-            }
-
-            // Close the statement and the database connection
+        if (mysqli_stmt_num_rows($stmt) > 0) {
+            // User exists, redirect to member.php
             mysqli_stmt_close($stmt);
             mysqli_close($mysqli);
+            header("Location: ./member.php");
+            exit();
+        } else {
+            // User does not exist, redirect to signUp.php
+            mysqli_stmt_close($stmt);
+            mysqli_close($mysqli);
+            header("Location: ./signUp.php");
+            exit();
         }
     }
+
+
+
 }
 
 
