@@ -22,6 +22,10 @@ require './functions.php';
 
 <body>
 
+    <div class="d-flex justify-content-center align-items-center my-4">
+        <h1 class="p-4"> Welcome to Library Books! </h2>
+    </div>
+
     <!-- Login Form -->
     <div class="container-fluid">
         <div class="row">

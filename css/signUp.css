@@ -1,5 +1,5 @@
 body {
-    background-color: #AC8E60;
+    background-color: #2F5233;
 }
 
 
@@ -19,6 +19,7 @@ h2{
     font-size: 25px;
     text-align: center;
     color: #2C2929;
+    background-color: #E4D9D5;
 }
 
 .labelStyle {
@@ -33,7 +34,7 @@ h2{
 
 .logInButton{
     font-size: 25px;
-    background-color: #7E574E;
+    background-color: #821D30;
     color: #E4D9D5;
     border-color: #CAC1B0;
     width: 9vw;

@@ -1,3 +1,13 @@
+<?php
+session_start();
+require './functions.php';
+
+if (isset($_SESSION['newUsername'])) {
+    $username = $_SESSION['newUsername'];
+}
+
+?>
+
 <!DOCTYPE html>
 <html lang="en">
 
@@ -16,7 +26,72 @@
 
 <body>
 
-<h1> Hi </h1>
+    <!-- Return Home Button -->
+    <form method="POST">
+        <button type="submit" name="returnHome" class="tranBack"><img class="homeButton mx-3 mt-3"
+                src="../img/home1.gif" alt="Back to Home Page" title="Back to Home Page"
+                attribution="https://www.flaticon.com/free-animated-icons/home"></button>
+    </form>
+
+    <!-- Show Available books -->
+    <div class="container d-flex justify-content-center align-items-center">
+        <div class="mt-5 mb-5">
+
+            <form method="POST" name="bookView" class="bookView p-5">
+                <?php $book1 = <<<DELIMETER
+                <h1> Good day $username! </h1>
+                <h2 class="my-5"> View our available book selection below. </h2>
+                DELIMETER;
+                echo $book1;
+
+                // Call the bookView function to get the available books
+                $availableBooks = bookView();
+
+                if (!empty($availableBooks)) {
+
+                    $heading = <<<DELIMITER
+                            <table>
+                            <tr>
+                                <th> Book Cover </th>
+                                <th> Title </th>
+                                <th> Description </th>
+                                <th> Author </th>
+                                <th> Genre </th>
+                                <th> Return Date </th>
+                            </tr>
+                        DELIMITER;
+                    $rows = '';
+
+                    foreach ($availableBooks as $book) {
+
+                        $row = <<<DELIMITER
+                            <tr>
+                                <td class="p-4"> <img src="../img/{$book['thumbnail']}" class="bookCover"> </td>
+                                <td class="title p-4"> <p> {$book['title']} </p> </td>
+                                <td class="description p-4"> <p> {$book['description']} </p> </td> 
+                                <td class="p-4"> <p> {$book['author']} </p> </td>
+                                <td class="p-4"> <p> {$book['genre']} </p> </td>
+                                <td class="return p-4"> <p> {$book['return_date']} </p> </td>
+                                <td class="p-4"> <button name="rent" type="submit" class="logInButton p-2">Rent</button></td>
+                            </tr>
+                            DELIMITER;
+                        $rows .= $row;
+                    }
+
+                    $table = <<<DELIMITER
+                        {$heading}
+                        {$rows}
+                        </table>
+                        DELIMITER;
+                    echo $table;
+
+                } else {
+                    echo '<p>No available books found.</p>';
+                }
+                ?>
+            </form>
+        </div>
+    </div>
 
 </body>
 

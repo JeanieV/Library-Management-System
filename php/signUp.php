@@ -31,6 +31,10 @@ require './functions.php';
                 attribution="https://www.flaticon.com/free-animated-icons/home"></button>
     </form>
 
+    <div class="container d-flex justify-content-center align-items-center">
+        <?php creatingUser(); ?>
+    </div>
+
     <!-- Register New User -->
     <div class="container d-flex justify-content-center align-items-center">
         <div class="mt-5 mb-5 mx-5">
@@ -78,9 +82,7 @@ require './functions.php';
                         <button name="signUpButton" type="submit" class="logInButton p-2">Sign Up</button>
                     </div>
                 </div>
-                <div class="container d-flex justify-content-center align-items-center">
-                    <?php creatingUser(); ?>
-                </div>
+
             </form>
         </div>
     </div>

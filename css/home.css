@@ -39,3 +39,12 @@ h2 {
     color: #E4D9D5;
     border: none;
 }
+
+h1{
+    font-size: 70px;
+    color: #E4D9D5;
+    text-align: center;
+    background-color: #7E574E;
+    width: max-content;
+    border: #E4D9D5 10px solid;
+}
