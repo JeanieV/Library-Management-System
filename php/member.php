@@ -2,9 +2,14 @@
 session_start();
 require './functions.php';
 
-if (isset($_SESSION['newUsername'])) {
-    $username = $_SESSION['newUsername'];
+if (isset($_SESSION['username'])) {
+    $username = $_SESSION['username'];
 }
+
+rentalMember();
+
+// Get the available books
+$availableBooks = bookView();
 
 ?>
 
@@ -14,7 +19,7 @@ if (isset($_SESSION['newUsername'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Library Management System </title>
+    <title>Member Page</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
@@ -26,26 +31,25 @@ if (isset($_SESSION['newUsername'])) {
 
 <body>
 
-    <!-- Return Home Button -->
+    <!-- LogOut Button -->
     <form method="POST">
-        <button type="submit" name="returnHome" class="tranBack"><img class="homeButton mx-3 mt-3"
-                src="../img/home1.gif" alt="Back to Home Page" title="Back to Home Page"
-                attribution="https://www.flaticon.com/free-animated-icons/home"></button>
+        <button type="submit" name="logOutButton" class="tranBack"><img class="logOutButton mx-3 mt-3"
+                src="../img/logout.png" alt="Log Out as User" title="Log Out as User"
+                attribution="https://www.flaticon.com/free-icons/logout"></button>
     </form>
 
     <!-- Show Available books -->
     <div class="container d-flex justify-content-center align-items-center">
         <div class="mt-5 mb-5">
 
-            <form method="POST" name="bookView" class="bookView p-5">
+            <form method="POST" name="bookView" class="bookView p-5" action="./rental.php">
                 <?php $book1 = <<<DELIMETER
                 <h1> Good day $username! </h1>
                 <h2 class="my-5"> View our available book selection below. </h2>
                 DELIMETER;
                 echo $book1;
 
-                // Call the bookView function to get the available books
-                $availableBooks = bookView();
+                userLogin();
 
                 if (!empty($availableBooks)) {
 
@@ -64,7 +68,11 @@ if (isset($_SESSION['newUsername'])) {
 
                     foreach ($availableBooks as $book) {
 
+                        $bookId = $book['book_id'];
+                        $returnDate = $book['return_date'];;
+
                         $row = <<<DELIMITER
+                            <form method="POST" name="rentBookForm" class="bookView p-5" action="./rental.php">
                             <tr>
                                 <td class="p-4"> <img src="../img/{$book['thumbnail']}" class="bookCover"> </td>
                                 <td class="title p-4"> <p> {$book['title']} </p> </td>
@@ -72,8 +80,14 @@ if (isset($_SESSION['newUsername'])) {
                                 <td class="p-4"> <p> {$book['author']} </p> </td>
                                 <td class="p-4"> <p> {$book['genre']} </p> </td>
                                 <td class="return p-4"> <p> {$book['return_date']} </p> </td>
-                                <td class="p-4"> <button name="rent" type="submit" class="logInButton p-2">Rent</button></td>
+                                    
+                                <td class="p-4">
+                                <input type="hidden" name="book_id" value="{$bookId}">
+                                <input type="hidden" name="return_date" value="{$returnDate}">
+                                <button name="rent" type="submit" class="logInButton p-2">Rent</button>
+                                </td>
                             </tr>
+                            </form>
                             DELIMITER;
                         $rows .= $row;
                     }

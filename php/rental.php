@@ -2,8 +2,8 @@
 session_start();
 require './functions.php';
 
-if (isset($_SESSION['newUsername'])) {
-    $username = $_SESSION['newUsername'];
+if (isset($_SESSION['username'])) {
+    $username = $_SESSION['username'];
 }
 
 ?>
@@ -14,7 +14,7 @@ if (isset($_SESSION['newUsername'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Library Management System </title>
+    <title>Rental Page </title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
@@ -28,29 +28,30 @@ if (isset($_SESSION['newUsername'])) {
 
     <!-- Return Home Button -->
     <form method="POST">
-        <button type="submit" name="returnHome" class="tranBack"><img class="homeButton mx-3 mt-3"
+        <button type="submit" name="returnBooks" class="tranBack"><img class="homeButton mx-3 mt-3"
                 src="../img/home1.gif" alt="Back to Home Page" title="Back to Home Page"
                 attribution="https://www.flaticon.com/free-animated-icons/home"></button>
     </form>
 
-    <form method="POST" name="bookView" class="bookView p-5">
-        <?php
-        $memberRentals = getMemberRentals($memberID);
+    <div class="container d-flex justify-content-center align-items-center">
+        <div class="mt-5 mb-5">
 
-        // Display the rentals on the dashboard
-        foreach ($memberRentals as $rental) {
-            $title = $rental['title'];
-            $thumbnail = $rental['thumbnail'];
-            $returnDate = $rental['return_date'];
+        
+        <?php userLogin(); ?>
+            <form method="POST" name="bookView" class="bookView p-5">
+                <?php $book1 = <<<DELIMETER
+                <h1> View your selection, $username! </h1>
+                DELIMETER;
+                echo $book1;
 
-            echo "<p>Title: $title</p>";
-            echo "<img src='$thumbnail' alt='Book Cover'>";
-            echo "<p>Return Date: $returnDate</p>";
-            echo "
-    <hr>";
-        }
-        ?>
-    </form>
+                rentalMember();
+                rentalDisplay();
+                ?>
+            </form>
+
+
+        </div>
+    </div>
 
 
 </body>

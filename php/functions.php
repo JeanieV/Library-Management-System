@@ -1,16 +1,23 @@
 <?php
+session_start();
 
 // Direct to SignUp Page
 if (isset($_POST['existButton'])) {
     header("Location: ./signUp.php");
 }
 
-// Return to Home
-if (isset($_POST['returnHome'])) {
+// LogOut
+if (isset($_POST['logOutButton'])) {
+    session_unset();
+    session_destroy();
     header("Location: ./index.php");
+    exit();
 }
 
-
+// Return to Book Page
+if (isset($_POST['returnBooks'])) {
+    header("Location: ./member.php");
+}
 
 // Database connection function
 function db_connect()
@@ -39,18 +46,18 @@ function db_connect()
     return $mysqli;
 }
 
+
 // Create a user that will show in the database
 function creatingUser()
 {
     if (isset($_POST['newUsername']) && isset($_POST['newFullName']) && isset($_POST['newAddress']) && isset($_POST['newPassword']) && isset($_POST['newEmail'])) {
-        // Get the user data from the POST request
-        $_SESSION['newUsername'] = $_POST['newUsername'];
-        $username = $_SESSION['newUsername'];
+        // Saving the username as a session variable
+        $_SESSION['username'] = $_POST['newUsername'];
+        $username = $_SESSION['username'];
         $fullName = $_POST['newFullName'];
         $address = $_POST['newAddress'];
         $password = $_POST['newPassword'];
         $email = $_POST['newEmail'];
-
 
         // Connect to the database
         $mysqli = db_connect();
@@ -107,21 +114,22 @@ function userLogin()
             return;
         }
 
-        // Check if the email already exists in the database
+        // Check if the email and password match in the database
         $query = "SELECT * FROM member WHERE email = ? AND password = ?";
         $stmt = mysqli_prepare($mysqli, $query);
         mysqli_stmt_bind_param($stmt, "ss", $email, $password);
         mysqli_stmt_execute($stmt);
-        mysqli_stmt_store_result($stmt);
+        $result = mysqli_stmt_get_result($stmt);
 
-        if (mysqli_stmt_num_rows($stmt) > 0) {
-            // User exists, redirect to member.php
+        if (mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_assoc($result);
+            $_SESSION['username'] = $row['username'];
             mysqli_stmt_close($stmt);
             mysqli_close($mysqli);
             header("Location: ./member.php");
             exit();
         } else {
-            // User does not exist, redirect to signUp.php
+            // User does not exist or wrong password, redirect to signUp.php
             mysqli_stmt_close($stmt);
             mysqli_close($mysqli);
             header("Location: ./signUp.php");
@@ -130,7 +138,7 @@ function userLogin()
     }
 }
 
-
+// This is the display for all the books on the database
 function bookView()
 {
     // Connect to the database
@@ -140,7 +148,10 @@ function bookView()
     }
 
     // Calculate the return date (7 days from now)
-    $returnDate = date('Y-m-d', strtotime('+7 days'));
+    if (!isset($_SESSION['return'])) {
+        $returnDate = date('Y-m-d', strtotime('+7 days'));
+        $_SESSION['return'] = $returnDate;
+    }
 
     // Select books from the database where availability is true
     $query = "SELECT * FROM books WHERE availability = true";
@@ -157,7 +168,8 @@ function bookView()
 
     $books = array();
     while ($row = mysqli_fetch_assoc($result)) {
-        // Add the calculated return date to the book array
+        // Calculate the return date (7 days from now) for each book
+        $returnDate = date('Y-m-d', strtotime('+7 days'));
         $row['return_date'] = $returnDate;
         $books[] = $row;
     }
@@ -169,8 +181,8 @@ function bookView()
     return $books;
 }
 
-
-function getMemberRentals($memberID)
+// Function to add the data to the Rental table
+function rentalMember()
 {
     // Connect to the database
     $mysqli = db_connect();
@@ -178,32 +190,105 @@ function getMemberRentals($memberID)
         return;
     }
 
-    // Prepare the query to get rentals for the member
-    $query = "SELECT b.title, b.thumbnail, r.return_date FROM rentals r
-              JOIN books b ON r.book_id = b.book_id
-              WHERE r.member_id = ?";
+    if (isset($_POST['rent'])) {
+        // Get the book ID and return date from the form submission
+        $bookId = $_POST['book_id'];
+        $returnDate = $_POST['return_date'];
 
-    $stmt = mysqli_prepare($mysqli, $query);
-    mysqli_stmt_bind_param($stmt, "i", $memberID);
+        // Retrieve the member_id for the logged-in user based on the username
+        $username = $_SESSION['username'];
+        $query = "SELECT member_id FROM member WHERE username = ?";
+        $stmt = mysqli_prepare($mysqli, $query);
+        mysqli_stmt_bind_param($stmt, "s", $username);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
 
-    if (!$stmt) {
-        // Error handling if the query preparation fails
-        echo "Error in query: " . mysqli_error($mysqli);
-        return null;
+        if (mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_assoc($result);
+            $memberId = $row['member_id'];
+
+            // Insert the rental information into the rentals table
+            $query = "INSERT INTO rental (member_id, book_id, return_date) VALUES (?, ?, ?)";
+            $stmt = mysqli_prepare($mysqli, $query);
+
+            if (!$stmt) {
+                // Error handling if the query preparation fails
+                echo "Error in query: " . mysqli_error($mysqli);
+                return;
+            }
+
+            mysqli_stmt_bind_param($stmt, "iis", $memberId, $bookId, $returnDate);
+            mysqli_stmt_execute($stmt);
+
+            // Close the statement
+            mysqli_stmt_close($stmt);
+        } else {
+            echo "Member ID not found for username: $username";
+        }
+
+        // Close the database connection
+        mysqli_close($mysqli);
+    }
+}
+
+// Function to display the current rental
+function rentalDisplay()
+{
+    // Connect to the database
+    $mysqli = db_connect();
+    if (!$mysqli) {
+        return;
     }
 
+    // Retrieve the member_id for the logged-in user based on the username
+    $username = $_SESSION['username'];
+    $query = "SELECT member_id FROM member WHERE username = ?";
+    $stmt = mysqli_prepare($mysqli, $query);
+    mysqli_stmt_bind_param($stmt, "s", $username);
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);
 
-    $rentals = array();
-    while ($row = mysqli_fetch_assoc($result)) {
-        $rentals[] = $row;
+    if (mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        $memberId = $row['member_id'];
+
+        // Retrieve the book_id(s) from the rental table for the specific member
+        $query = "SELECT book_id FROM rental WHERE member_id = ?";
+        $stmt2 = mysqli_prepare($mysqli, $query);
+        mysqli_stmt_bind_param($stmt2, "i", $memberId);
+        mysqli_stmt_execute($stmt2);
+        $result2 = mysqli_stmt_get_result($stmt2);
+
+        if (mysqli_num_rows($result2) > 0) {
+            // Loop through the result set and fetch each book's details from the books table
+            while ($row2 = mysqli_fetch_assoc($result2)) {
+                $bookId = $row2['book_id'];
+
+                // Use the retrieved book_id to fetch the corresponding title and thumbnail from the books table
+                $query = "SELECT title, thumbnail FROM books WHERE book_id = ?";
+                $stmt = mysqli_prepare($mysqli, $query);
+                mysqli_stmt_bind_param($stmt, "i", $bookId);
+                mysqli_stmt_execute($stmt);
+                $result = mysqli_stmt_get_result($stmt);
+
+                if (mysqli_num_rows($result) > 0) {
+                    $row = mysqli_fetch_assoc($result);
+
+                    // Display the title and thumbnail on your web page
+                    echo "Title: " . $row['title'] . "<br>";
+                    echo '<img src="../img/' . $row['thumbnail'] . '" alt="Book Thumbnail" class="bookCover">';
+                    echo "<hr>"; // Add a horizontal line between each rental entry
+                } else {
+                    echo "Book not found in the books table.";
+                }
+            }
+        } else {
+            echo "No rentals found for the logged-in member.";
+        }
     }
 
     // Close the statement and the database connection
     mysqli_stmt_close($stmt);
     mysqli_close($mysqli);
-
-    return $rentals;
 }
 ?>
