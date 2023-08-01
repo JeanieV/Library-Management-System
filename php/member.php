@@ -11,6 +11,8 @@ rentalMember();
 // Get the available books
 $availableBooks = bookView();
 
+
+
 ?>
 
 <!DOCTYPE html>
@@ -45,7 +47,13 @@ $availableBooks = bookView();
             <form method="POST" name="bookView" class="bookView p-5" action="./rental.php">
                 <?php $book1 = <<<DELIMETER
                 <h1> Good day $username! </h1>
+
+                <button type="submit" name="viewOrder" class="tranBack mt-3"><img class="logOutButton mx-3 mt-3"
+                src="../img/list.gif" alt="View Order" title="View Order"
+                attribution="https://www.flaticon.com/free-animated-icons/order"></button>
+
                 <h2 class="my-5"> View our available book selection below. </h2>
+                
                 DELIMETER;
                 echo $book1;
 
@@ -80,7 +88,6 @@ $availableBooks = bookView();
                                 <td class="p-4"> <p> {$book['author']} </p> </td>
                                 <td class="p-4"> <p> {$book['genre']} </p> </td>
                                 <td class="return p-4"> <p> {$book['return_date']} </p> </td>
-                                    
                                 <td class="p-4">
                                 <input type="hidden" name="book_id" value="{$bookId}">
                                 <input type="hidden" name="return_date" value="{$returnDate}">

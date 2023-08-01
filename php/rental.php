@@ -6,6 +6,8 @@ if (isset($_SESSION['username'])) {
     $username = $_SESSION['username'];
 }
 
+
+
 ?>
 
 <!DOCTYPE html>
@@ -36,11 +38,12 @@ if (isset($_SESSION['username'])) {
     <div class="container d-flex justify-content-center align-items-center">
         <div class="mt-5 mb-5">
 
-        
-        <?php userLogin(); ?>
+
+            <?php userLogin(); ?>
             <form method="POST" name="bookView" class="bookView p-5">
+
                 <?php $book1 = <<<DELIMETER
-                <h1> View your selection, $username! </h1>
+                <h1> View your selection, $username! </h1>   
                 DELIMETER;
                 echo $book1;
 

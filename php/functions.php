@@ -19,6 +19,17 @@ if (isset($_POST['returnBooks'])) {
     header("Location: ./member.php");
 }
 
+// View Order
+if (isset($_POST['viewOrder'])) {
+    header("Location: ./rental.php");
+}
+
+// Clear rental
+if (isset($_POST['clearRentalButton'])) {
+    clearRow();
+}
+
+
 // Database connection function
 function db_connect()
 {
@@ -198,6 +209,7 @@ function rentalMember()
         // Retrieve the member_id for the logged-in user based on the username
         $username = $_SESSION['username'];
         $query = "SELECT member_id FROM member WHERE username = ?";
+
         $stmt = mysqli_prepare($mysqli, $query);
         mysqli_stmt_bind_param($stmt, "s", $username);
         mysqli_stmt_execute($stmt);
@@ -252,8 +264,9 @@ function rentalDisplay()
         $row = mysqli_fetch_assoc($result);
         $memberId = $row['member_id'];
 
-        // Retrieve the book_id(s) from the rental table for the specific member
-        $query = "SELECT book_id FROM rental WHERE member_id = ?";
+        // Retrieve the book_id(s) and rental_id(s) from the rental table for the specific member
+        $query = "SELECT rental_id, book_id FROM rental WHERE member_id = ?";
+
         $stmt2 = mysqli_prepare($mysqli, $query);
         mysqli_stmt_bind_param($stmt2, "i", $memberId);
         mysqli_stmt_execute($stmt2);
@@ -263,9 +276,11 @@ function rentalDisplay()
             // Loop through the result set and fetch each book's details from the books table
             while ($row2 = mysqli_fetch_assoc($result2)) {
                 $bookId = $row2['book_id'];
+                $rentalId = $row2['rental_id'];
+                $returnDate = $_POST['return_date'];
 
                 // Use the retrieved book_id to fetch the corresponding title and thumbnail from the books table
-                $query = "SELECT title, thumbnail FROM books WHERE book_id = ?";
+                $query = "SELECT title, thumbnail, return_date FROM books WHERE book_id = ?";
                 $stmt = mysqli_prepare($mysqli, $query);
                 mysqli_stmt_bind_param($stmt, "i", $bookId);
                 mysqli_stmt_execute($stmt);
@@ -274,16 +289,50 @@ function rentalDisplay()
                 if (mysqli_num_rows($result) > 0) {
                     $row = mysqli_fetch_assoc($result);
 
-                    // Display the title and thumbnail on your web page
-                    echo "Title: " . $row['title'] . "<br>";
-                    echo '<img src="../img/' . $row['thumbnail'] . '" alt="Book Thumbnail" class="bookCover">';
-                    echo "<hr>"; // Add a horizontal line between each rental entry
+                    $rental = <<<DELIMETER
+                    <div class="d-flex justify-content-center align-items-center">
+                    DELIMETER;
+                    echo $rental;
+
+                    $heading = <<<DELIMITER
+                    <table>
+                    <tr>
+                        <th> Book Cover </th>
+                        <th> Title </th>
+                        <th> Return Date </th>
+                    </tr>
+                    DELIMITER;
+                     $rows = '';
+
+                     $row = <<<DELIMETER
+                        <tr>
+                        <form method="POST" action="./member.php" class="my-5">
+                            <td class="p-4"><img src="../img/{$row['thumbnail']}" alt="Book Thumbnail" class="bookCover"></td>
+                            <td class="p-4"><h2> {$row['title']} </h2></td>
+                            <td class="p-4"><h2> {$returnDate} </h2></td>
+                            <input type="hidden" name="rental_id" value="$rentalId">
+                            <td class="p-4"><button type="submit" name="clearRentalButton" class="tranBack"><img class="homeButton mx-3 mt-3"
+                                src="../img/bin.gif" alt="Delete Order" title="Delete Order"
+                                attribution="https://www.flaticon.com/free-animated-icons/document"></button></td>
+                        </form>
+                        </tr>
+                    </table>
+                    </div>
+                    DELIMETER;
+                    $rows .= $row;
+
+                    $table = <<<DELIMITER
+                        {$heading}
+                        {$rows}
+                        </table>
+                        DELIMITER;
+                    echo $table;
                 } else {
                     echo "Book not found in the books table.";
                 }
             }
         } else {
-            echo "No rentals found for the logged-in member.";
+            echo "<p>Order is currently empty!</p>";
         }
     }
 
@@ -291,4 +340,34 @@ function rentalDisplay()
     mysqli_stmt_close($stmt);
     mysqli_close($mysqli);
 }
+
+// Function with a button to clear the book selected for rent
+function clearRow()
+{
+
+    if (isset($_POST['rental_id'])) {
+        $rentalId = $_POST['rental_id'];
+
+        $mysqli = db_connect();
+        if (!$mysqli) {
+            return;
+        }
+
+        // Prepare the SQL query to delete the specific record from the rental table
+        $query = "DELETE FROM rental WHERE rental_id = ?";
+
+        // Prepare the statement
+        $stmt = mysqli_prepare($mysqli, $query);
+        mysqli_stmt_bind_param($stmt, "i", $rentalId);
+
+        // Execute the statement
+        if (mysqli_stmt_execute($stmt)) {
+        }
+
+        // Close the statement and the database connection
+        mysqli_stmt_close($stmt);
+        mysqli_close($mysqli);
+    }
+}
+
 ?>
