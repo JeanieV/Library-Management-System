@@ -2,11 +2,10 @@
 session_start();
 require './functions.php';
 
+// Public username
 if (isset($_SESSION['username'])) {
     $username = $_SESSION['username'];
 }
-
-
 ?>
 
 <!DOCTYPE html>
@@ -27,19 +26,19 @@ if (isset($_SESSION['username'])) {
 
 <body>
 
-
-
     <div class="container d-flex justify-content-center align-items-center">
         <div class="mt-5 mb-5">
 
+            <!-- This will make sure that the username is known throughout the website -->
             <?php userLogin(); ?>
-            <form method="POST" name="bookView" class="bookView p-5">
 
+            <form method="POST" name="bookView" class="bookView p-5">
                 <?php $book1 = <<<DELIMETER
                 <h1 class="mb-5"> Thank you for renting your books, $username! </h1>   
                 DELIMETER;
                 echo $book1;
                 ?>
+                <!-- Go back to the index page -->
                 <button type="submit" name="logOutButton" class="tranBack"><img class="logOutButton mx-3 mt-3"
                         src="../img/logout.png" alt="Log Out as User" title="Log Out as User"
                         attribution="https://www.flaticon.com/free-icons/logout"></button>
@@ -47,7 +46,6 @@ if (isset($_SESSION['username'])) {
 
         </div>
     </div>
-
 
 </body>
 

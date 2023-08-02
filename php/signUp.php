@@ -1,8 +1,6 @@
 <?php
-
 session_start();
 require './functions.php';
-
 
 ?>
 
@@ -32,6 +30,7 @@ require './functions.php';
     </form>
 
     <div class="container d-flex justify-content-center align-items-center">
+        <!-- Create a user and add it to the database -->
         <?php creatingUser(); ?>
     </div>
 

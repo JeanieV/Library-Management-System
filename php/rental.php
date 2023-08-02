@@ -5,8 +5,6 @@ require './functions.php';
 if (isset($_SESSION['username'])) {
     $username = $_SESSION['username'];
 }
-
-
 ?>
 
 <!DOCTYPE html>
@@ -37,6 +35,7 @@ if (isset($_SESSION['username'])) {
     <div class="container d-flex justify-content-center align-items-center">
         <div class="mt-5 mb-5">
 
+            <!-- This will make sure that the username is known throughout the website -->
             <?php userLogin(); ?>
             <form method="POST" name="bookView" class="bookView p-5">
 
@@ -45,19 +44,19 @@ if (isset($_SESSION['username'])) {
                 DELIMETER;
                 echo $book1;
 
+                // Adding the rental id to the database and display the selected books
                 rentalMember();
                 rentalDisplay();
                 ?>
 
+                <!-- Redirect to the index page -->
                 <div class="d-flex justify-content-center align-items-center">
-
                     <button type="submit" name="checkout" class="checkoutButton p-2"> Checkout </button>
                 </div>
             </form>
 
         </div>
     </div>
-
 
 </body>
 

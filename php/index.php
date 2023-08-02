@@ -55,6 +55,7 @@ require './functions.php';
                         <div class="container d-flex justify-content-center align-items-center">
                             <div class="mx-5 mt-3 mb-5">
                                 <button name="logInButton" type="submit" class="logInButton p-2">Log In</button>
+                                <!-- This will make sure that the username is known throughout the website -->
                                 <?php userLogin(); ?>
                             </div>
                         </div>
@@ -76,10 +77,7 @@ require './functions.php';
                 </div>
             </div>
 
-
-
-            <!-- Login Form -->
-
+            <!-- Staff Form -->
             <div class="col-sm-6">
                 <div class="mt-5 mb-5 mx-5 loginForm p-5">
 
@@ -109,9 +107,6 @@ require './functions.php';
             </div>
         </div>
     </div>
-
-
-
 
 </body>
 

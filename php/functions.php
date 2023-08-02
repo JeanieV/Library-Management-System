@@ -32,7 +32,6 @@ if (isset($_POST['returnHome'])) {
 }
 
 // Thank you Page
-
 if (isset($_POST['checkout'])) {
     header("Location: ./thankYou.php");
 }
@@ -60,7 +59,6 @@ function db_connect()
         echo "Error connecting to the database: " . mysqli_connect_error();
         return null;
     }
-
     return $mysqli;
 }
 
@@ -83,13 +81,16 @@ function creatingUser()
             return;
         }
 
-        // Check if the email already exists in the database
+        // Check if the email already exists in the database 
         $query = "SELECT * FROM member WHERE email = ?";
         $stmt = mysqli_prepare($mysqli, $query);
+
+        // Prepare the statement to bind the parameters (email)
         mysqli_stmt_bind_param($stmt, "s", $email);
         mysqli_stmt_execute($stmt);
         mysqli_stmt_store_result($stmt);
 
+        // If there is information in the table that matches the input value
         if (mysqli_stmt_num_rows($stmt) > 0) {
             echo '<h2 class="p-3">Email already exists. Please use a different email address.</h2>';
             mysqli_stmt_close($stmt);
@@ -97,16 +98,16 @@ function creatingUser()
             return;
         }
 
-        // Prepare the insert query with placeholders
+        // SQL Statement
         $query = "INSERT INTO member (`username`, `fullname`, `address`, `password`, `email`) VALUES (?, ?, ?, ?, ?)";
 
         // Prepare the statement
         $stmt = mysqli_prepare($mysqli, $query);
 
-        // Bind the parameters to the statement
+        // Bind the parameters to the statement (username, fullname, address, password and email)
         mysqli_stmt_bind_param($stmt, "sssss", $username, $fullName, $address, $password, $email);
 
-        // Execute the statement
+        // If the user has successfully been added to the database
         if (mysqli_stmt_execute($stmt)) {
             echo '<h2 class="p-3">Success: User created successfully! <br> Head back to Home Page for Login</h2>';
         } else {
@@ -118,6 +119,7 @@ function creatingUser()
         mysqli_close($mysqli);
     }
 }
+
 
 // Directs the user to the member or sign-up page depending on whether they are on the database
 function userLogin()
@@ -134,14 +136,18 @@ function userLogin()
 
         // Check if the email and password match in the database
         $query = "SELECT * FROM member WHERE email = ? AND password = ?";
+
+        // Prepare the statement to bind the parameters (email and password)
         $stmt = mysqli_prepare($mysqli, $query);
         mysqli_stmt_bind_param($stmt, "ss", $email, $password);
         mysqli_stmt_execute($stmt);
         $result = mysqli_stmt_get_result($stmt);
 
+        // If there is information in the table, find the username that match
         if (mysqli_num_rows($result) > 0) {
             $row = mysqli_fetch_assoc($result);
             $_SESSION['username'] = $row['username'];
+
             mysqli_stmt_close($stmt);
             mysqli_close($mysqli);
             header("Location: ./member.php");
@@ -155,6 +161,7 @@ function userLogin()
         }
     }
 }
+
 
 // This is the display for all the books on the database
 function bookView()
@@ -184,6 +191,7 @@ function bookView()
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);
 
+
     $books = array();
     while ($row = mysqli_fetch_assoc($result)) {
         // Calculate the return date (7 days from now) for each book
@@ -192,12 +200,12 @@ function bookView()
         $books[] = $row;
     }
 
-    // Close the statement and the database connection
     mysqli_stmt_close($stmt);
     mysqli_close($mysqli);
 
     return $books;
 }
+
 
 // Function to add the data to the Rental table
 function rentalMember()
@@ -208,33 +216,43 @@ function rentalMember()
         return;
     }
 
+    // If the user clicks on the "rent" button
     if (isset($_POST['rent'])) {
+
         // Get the book ID and return date from the form submission
         $bookId = $_POST['book_id'];
         $returnDate = $_POST['return_date'];
 
-        // Retrieve the member_id for the logged-in user based on the username
+        // Find the member_id that matches the username
         $username = $_SESSION['username'];
         $query = "SELECT member_id FROM member WHERE username = ?";
 
+        // Bind the parameters (username) to the statement
         $stmt = mysqli_prepare($mysqli, $query);
         mysqli_stmt_bind_param($stmt, "s", $username);
         mysqli_stmt_execute($stmt);
+
+        // Creating a new parameter
         $result = mysqli_stmt_get_result($stmt);
 
+        // If there is information in the rental table
         if (mysqli_num_rows($result) > 0) {
             $row = mysqli_fetch_assoc($result);
             $memberId = $row['member_id'];
 
             // Check if the member has already reached the rental limit of 5 books
             $query = "SELECT COUNT(*) as rental_count FROM rental WHERE member_id = ?";
+
             $stmt = mysqli_prepare($mysqli, $query);
             mysqli_stmt_bind_param($stmt, "i", $memberId);
             mysqli_stmt_execute($stmt);
             $result = mysqli_stmt_get_result($stmt);
             $row = mysqli_fetch_assoc($result);
+
+            // Storing the rental_count as a variable to use further
             $rentalCount = $row['rental_count'];
 
+            // If the user reached the limit of 5 books
             if ($rentalCount >= 5) {
                 echo "<h3 class='my-5'>You have already reached the rental limit of 5 books.<br> Book has not been added!</h3>";
             } else {
@@ -248,10 +266,10 @@ function rentalMember()
                     return;
                 }
 
+                // Bind the parameters (member_id, book_id and return_date
                 mysqli_stmt_bind_param($stmt, "iis", $memberId, $bookId, $returnDate);
                 mysqli_stmt_execute($stmt);
 
-                // Close the statement
                 mysqli_stmt_close($stmt);
             }
         } else {
@@ -263,6 +281,7 @@ function rentalMember()
     }
 }
 
+
 // Function to display the current rental
 function rentalDisplay()
 {
@@ -272,48 +291,60 @@ function rentalDisplay()
         return;
     }
 
-    // Retrieve the member_id for the logged-in user based on the username
+    // Find the username that matches the member_id
     $username = $_SESSION['username'];
     $query = "SELECT member_id FROM member WHERE username = ?";
     $stmt = mysqli_prepare($mysqli, $query);
+
+    // Bind the parameter (username)
     mysqli_stmt_bind_param($stmt, "s", $username);
     mysqli_stmt_execute($stmt);
     $result = mysqli_stmt_get_result($stmt);
 
+    // If there is information in the rental table
     if (mysqli_num_rows($result) > 0) {
         $row = mysqli_fetch_assoc($result);
         $memberId = $row['member_id'];
 
-        // Retrieve the book_id(s) and rental_id(s) from the rental table for the specific member
+        // Find the id's for the specific user
         $query = "SELECT rental_id, book_id, return_date FROM rental WHERE member_id = ?";
 
         $stmt2 = mysqli_prepare($mysqli, $query);
+
+        // Bind the member_id to the statement
         mysqli_stmt_bind_param($stmt2, "i", $memberId);
         mysqli_stmt_execute($stmt2);
         $result2 = mysqli_stmt_get_result($stmt2);
 
+        // If there is information in the books table
         if (mysqli_num_rows($result2) > 0) {
-            // Initialize total price variable
+
+            // Set the price at a starting amount of 0
             $totalPrice = 0;
 
-            // Initialize rows variable to store the HTML of all rented books
             $rows = '';
 
-            // Loop through the result set and fetch each book's details from the books table
+            // Get the information from the books table
             while ($row2 = mysqli_fetch_assoc($result2)) {
                 $bookId = $row2['book_id'];
                 $rentalId = $row2['rental_id'];
                 $returnDate = $row2['return_date'];
 
-                // Use the retrieved book_id to fetch the corresponding title and thumbnail from the books table
+                // Get the necessary information from the books table
                 $query = "SELECT title, thumbnail, return_date, price FROM books WHERE book_id = ?";
+
                 $stmt = mysqli_prepare($mysqli, $query);
+
+                // Bind the book_id parameter
                 mysqli_stmt_bind_param($stmt, "i", $bookId);
                 mysqli_stmt_execute($stmt);
                 $result = mysqli_stmt_get_result($stmt);
 
+                // If the table has information in it
                 if (mysqli_num_rows($result) > 0) {
                     $row = mysqli_fetch_assoc($result);
+
+                    // Storing the price as a variable to use again
                     $price = $row['price'];
 
                     // Display the rented books
@@ -365,7 +396,7 @@ function rentalDisplay()
             DELIMETER;
             echo $table;
 
-            $finalOutput = <<< DELIMETER
+            $finalOutput = <<<DELIMETER
             <div class="d-flex justify-content-center align-items-center">
                 <h2 class='my-5'>Total Price for all rented books: R $totalPrice </h2>
             </div>
@@ -376,7 +407,6 @@ function rentalDisplay()
         }
     }
 
-    // Close the statement and the database connection
     mysqli_stmt_close($stmt);
     mysqli_close($mysqli);
 }
@@ -386,28 +416,28 @@ function rentalDisplay()
 function clearRow()
 {
 
+    // If there is a rental_id present
     if (isset($_POST['rental_id'])) {
         $rentalId = $_POST['rental_id'];
 
+        // Connect to the database
         $mysqli = db_connect();
         if (!$mysqli) {
             return;
         }
 
-        // Prepare the SQL query to delete the specific record from the rental table
+        // SQL Statement to delete the entire row from the table
         $query = "DELETE FROM rental WHERE rental_id = ?";
 
-        // Prepare the statement
         $stmt = mysqli_prepare($mysqli, $query);
         mysqli_stmt_bind_param($stmt, "i", $rentalId);
 
-        // Execute the statement
+        // Where should the user go when a row has been deleted?
         if (mysqli_stmt_execute($stmt)) {
             header("Location: ./rental.php");
             exit();
         }
 
-        // Close the statement and the database connection
         mysqli_stmt_close($stmt);
         mysqli_close($mysqli);
     }

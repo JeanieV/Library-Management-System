@@ -2,6 +2,7 @@
 session_start();
 require './functions.php';
 
+// Username
 if (isset($_SESSION['username'])) {
     $username = $_SESSION['username'];
 }
@@ -10,9 +11,6 @@ rentalMember();
 
 // Get the available books
 $availableBooks = bookView();
-
-
-
 ?>
 
 <!DOCTYPE html>
@@ -57,10 +55,13 @@ $availableBooks = bookView();
                 DELIMETER;
                 echo $book1;
 
+                // This will make sure that the username is known throughout the website
                 userLogin();
 
+                // If there is something in the book
                 if (!empty($availableBooks)) {
 
+                    // Table heading
                     $heading = <<<DELIMITER
                             <table>
                             <tr>
@@ -75,8 +76,10 @@ $availableBooks = bookView();
                         DELIMITER;
                     $rows = '';
 
+                    // Make sure that all the books are appending to the list
                     foreach ($availableBooks as $book) {
 
+                        // Storing the book_id and return_id to use it again
                         $bookId = $book['book_id'];
                         $returnDate = $book['return_date'];;
 
@@ -109,6 +112,7 @@ $availableBooks = bookView();
                     echo $table;
 
                 } else {
+                    // Filter out the unavailable books (they are rented out by other users)
                     echo '<p>No available books found. <br> All the books have been rented out! </p>';
                 }
                 ?>
