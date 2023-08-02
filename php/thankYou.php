@@ -15,7 +15,7 @@ if (isset($_SESSION['username'])) {
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Rental Page </title>
+    <title>Thank You Page </title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"
@@ -27,12 +27,7 @@ if (isset($_SESSION['username'])) {
 
 <body>
 
-    <!-- Return Home Button -->
-    <form method="POST">
-        <button type="submit" name="returnBooks" class="tranBack"><img class="homeButton mx-3 mt-3"
-                src="../img/home1.gif" alt="Back to Home Page" title="Back to Home Page"
-                attribution="https://www.flaticon.com/free-animated-icons/home"></button>
-    </form>
+
 
     <div class="container d-flex justify-content-center align-items-center">
         <div class="mt-5 mb-5">
@@ -41,18 +36,13 @@ if (isset($_SESSION['username'])) {
             <form method="POST" name="bookView" class="bookView p-5">
 
                 <?php $book1 = <<<DELIMETER
-                <h1 class="mb-5"> View your selection, $username! </h1>   
+                <h1 class="mb-5"> Thank you for renting your books, $username! </h1>   
                 DELIMETER;
                 echo $book1;
-
-                rentalMember();
-                rentalDisplay();
                 ?>
-
-                <div class="d-flex justify-content-center align-items-center">
-
-                    <button type="submit" name="checkout" class="checkoutButton p-2"> Checkout </button>
-                </div>
+                <button type="submit" name="logOutButton" class="tranBack"><img class="logOutButton mx-3 mt-3"
+                        src="../img/logout.png" alt="Log Out as User" title="Log Out as User"
+                        attribution="https://www.flaticon.com/free-icons/logout"></button>
             </form>
 
         </div>

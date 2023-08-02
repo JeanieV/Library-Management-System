@@ -8,10 +8,7 @@ if (isset($_POST['existButton'])) {
 
 // LogOut
 if (isset($_POST['logOutButton'])) {
-    session_unset();
-    session_destroy();
     header("Location: ./index.php");
-    exit();
 }
 
 // Return to Book Page
@@ -29,6 +26,16 @@ if (isset($_POST['clearRentalButton'])) {
     clearRow();
 }
 
+// Return Home
+if (isset($_POST['returnHome'])) {
+    header("Location: ./index.php");
+}
+
+// Thank you Page
+
+if (isset($_POST['checkout'])) {
+    header("Location: ./thankYou.php");
+}
 
 // Database connection function
 function db_connect()
@@ -164,8 +171,8 @@ function bookView()
         $_SESSION['return'] = $returnDate;
     }
 
-    // Select books from the database where availability is true
-    $query = "SELECT * FROM books WHERE availability = true";
+    // Select books from the database where availability is true and not rented out
+    $query = "SELECT * FROM books WHERE availability = true AND book_id NOT IN (SELECT book_id FROM rental)";
     $stmt = mysqli_prepare($mysqli, $query);
 
     if (!$stmt) {
@@ -219,21 +226,34 @@ function rentalMember()
             $row = mysqli_fetch_assoc($result);
             $memberId = $row['member_id'];
 
-            // Insert the rental information into the rentals table
-            $query = "INSERT INTO rental (member_id, book_id, return_date) VALUES (?, ?, ?)";
+            // Check if the member has already reached the rental limit of 5 books
+            $query = "SELECT COUNT(*) as rental_count FROM rental WHERE member_id = ?";
             $stmt = mysqli_prepare($mysqli, $query);
-
-            if (!$stmt) {
-                // Error handling if the query preparation fails
-                echo "Error in query: " . mysqli_error($mysqli);
-                return;
-            }
-
-            mysqli_stmt_bind_param($stmt, "iis", $memberId, $bookId, $returnDate);
+            mysqli_stmt_bind_param($stmt, "i", $memberId);
             mysqli_stmt_execute($stmt);
+            $result = mysqli_stmt_get_result($stmt);
+            $row = mysqli_fetch_assoc($result);
+            $rentalCount = $row['rental_count'];
 
-            // Close the statement
-            mysqli_stmt_close($stmt);
+            if ($rentalCount >= 5) {
+                echo "<h3 class='my-5'>You have already reached the rental limit of 5 books.<br> Book has not been added!</h3>";
+            } else {
+                // Insert the rental information into the rentals table
+                $query = "INSERT INTO rental (member_id, book_id, return_date) VALUES (?, ?, ?)";
+                $stmt = mysqli_prepare($mysqli, $query);
+
+                if (!$stmt) {
+                    // Error handling if the query preparation fails
+                    echo "Error in query: " . mysqli_error($mysqli);
+                    return;
+                }
+
+                mysqli_stmt_bind_param($stmt, "iis", $memberId, $bookId, $returnDate);
+                mysqli_stmt_execute($stmt);
+
+                // Close the statement
+                mysqli_stmt_close($stmt);
+            }
         } else {
             echo "Member ID not found for username: $username";
         }
@@ -265,7 +285,7 @@ function rentalDisplay()
         $memberId = $row['member_id'];
 
         // Retrieve the book_id(s) and rental_id(s) from the rental table for the specific member
-        $query = "SELECT rental_id, book_id FROM rental WHERE member_id = ?";
+        $query = "SELECT rental_id, book_id, return_date FROM rental WHERE member_id = ?";
 
         $stmt2 = mysqli_prepare($mysqli, $query);
         mysqli_stmt_bind_param($stmt2, "i", $memberId);
@@ -273,14 +293,20 @@ function rentalDisplay()
         $result2 = mysqli_stmt_get_result($stmt2);
 
         if (mysqli_num_rows($result2) > 0) {
+            // Initialize total price variable
+            $totalPrice = 0;
+
+            // Initialize rows variable to store the HTML of all rented books
+            $rows = '';
+
             // Loop through the result set and fetch each book's details from the books table
             while ($row2 = mysqli_fetch_assoc($result2)) {
                 $bookId = $row2['book_id'];
                 $rentalId = $row2['rental_id'];
-                $returnDate = $_POST['return_date'];
+                $returnDate = $row2['return_date'];
 
                 // Use the retrieved book_id to fetch the corresponding title and thumbnail from the books table
-                $query = "SELECT title, thumbnail, return_date FROM books WHERE book_id = ?";
+                $query = "SELECT title, thumbnail, return_date, price FROM books WHERE book_id = ?";
                 $stmt = mysqli_prepare($mysqli, $query);
                 mysqli_stmt_bind_param($stmt, "i", $bookId);
                 mysqli_stmt_execute($stmt);
@@ -288,49 +314,63 @@ function rentalDisplay()
 
                 if (mysqli_num_rows($result) > 0) {
                     $row = mysqli_fetch_assoc($result);
+                    $price = $row['price'];
 
-                    $rental = <<<DELIMETER
-                    <div class="d-flex justify-content-center align-items-center">
-                    DELIMETER;
-                    echo $rental;
-
+                    // Display the rented books
                     $heading = <<<DELIMITER
+                    <div class="d-flex justify-content-center align-items-center">
                     <table>
-                    <tr>
-                        <th> Book Cover </th>
-                        <th> Title </th>
-                        <th> Return Date </th>
-                    </tr>
-                    DELIMITER;
-                     $rows = '';
-
-                     $row = <<<DELIMETER
                         <tr>
-                        <form method="POST" action="./member.php" class="my-5">
-                            <td class="p-4"><img src="../img/{$row['thumbnail']}" alt="Book Thumbnail" class="bookCover"></td>
-                            <td class="p-4"><h2> {$row['title']} </h2></td>
-                            <td class="p-4"><h2> {$returnDate} </h2></td>
+                            <th> Book Cover </th>
+                            <th> Title </th>
+                            <th> Return Date </th>
+                            <th> Price </th>
+                        </tr>
+                    DELIMITER;
+
+                    // Concatenate the HTML of each book to $rows
+                    $rowHTML = <<<DELIMETER
+                        <tr>
+                        <div class="d-flex justify-content-center align-items-center">
+                        <form method="POST" action="./member.php">
+                            <td class="p-5"><img src="../img/{$row['thumbnail']}" alt="Book Thumbnail" class="bookCover"></td>
+                            <td class="title p-4"><p> {$row['title']} </p></td>
+                            <td class="p-5"><p> {$returnDate} </p></td>
+                            <td class="p-5"><p> R {$row['price']} </p></td>
                             <input type="hidden" name="rental_id" value="$rentalId">
-                            <td class="p-4"><button type="submit" name="clearRentalButton" class="tranBack"><img class="homeButton mx-3 mt-3"
+                            <td class="p-5"><button type="submit" name="clearRentalButton" class="tranBack"><img class="homeButton mx-3 mt-3"
                                 src="../img/bin.gif" alt="Delete Order" title="Delete Order"
                                 attribution="https://www.flaticon.com/free-animated-icons/document"></button></td>
                         </form>
+                        </div>
                         </tr>
-                    </table>
-                    </div>
                     DELIMETER;
-                    $rows .= $row;
+                    $rows .= $rowHTML;
 
-                    $table = <<<DELIMITER
-                        {$heading}
-                        {$rows}
-                        </table>
-                        DELIMITER;
-                    echo $table;
+                    // Update the total price
+                    $totalPrice += $price;
                 } else {
                     echo "Book not found in the books table.";
                 }
             }
+
+            // Store the total price as a session variable after the while loop has finished
+            $_SESSION['totalPrice'] = $totalPrice;
+
+            $table = <<<DELIMETER
+                {$heading}
+                {$rows}
+                </table>
+                </div>
+            DELIMETER;
+            echo $table;
+
+            $finalOutput = <<< DELIMETER
+            <div class="d-flex justify-content-center align-items-center">
+                <h2 class='my-5'>Total Price for all rented books: R $totalPrice </h2>
+            </div>
+            DELIMETER;
+            echo $finalOutput;
         } else {
             echo "<p>Order is currently empty!</p>";
         }
@@ -340,6 +380,7 @@ function rentalDisplay()
     mysqli_stmt_close($stmt);
     mysqli_close($mysqli);
 }
+
 
 // Function with a button to clear the book selected for rent
 function clearRow()
@@ -362,6 +403,8 @@ function clearRow()
 
         // Execute the statement
         if (mysqli_stmt_execute($stmt)) {
+            header("Location: ./rental.php");
+            exit();
         }
 
         // Close the statement and the database connection
@@ -369,5 +412,6 @@ function clearRow()
         mysqli_close($mysqli);
     }
 }
+
 
 ?>

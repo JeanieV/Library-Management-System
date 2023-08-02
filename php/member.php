@@ -35,9 +35,9 @@ $availableBooks = bookView();
 
     <!-- LogOut Button -->
     <form method="POST">
-        <button type="submit" name="logOutButton" class="tranBack"><img class="logOutButton mx-3 mt-3"
-                src="../img/logout.png" alt="Log Out as User" title="Log Out as User"
-                attribution="https://www.flaticon.com/free-icons/logout"></button>
+        <button type="submit" name="logOutButton" class="tranBack"><img class="homeButton mx-3 mt-3"
+                src="../img/home1.gif" alt="Back to Home Page" title="Back to Home Page"
+                attribution="https://www.flaticon.com/free-animated-icons/home"></button>
     </form>
 
     <!-- Show Available books -->
@@ -70,6 +70,7 @@ $availableBooks = bookView();
                                 <th> Author </th>
                                 <th> Genre </th>
                                 <th> Return Date </th>
+                                <th> Price </th>
                             </tr>
                         DELIMITER;
                     $rows = '';
@@ -82,13 +83,14 @@ $availableBooks = bookView();
                         $row = <<<DELIMITER
                             <form method="POST" name="rentBookForm" class="bookView p-5" action="./rental.php">
                             <tr>
-                                <td class="p-4"> <img src="../img/{$book['thumbnail']}" class="bookCover"> </td>
-                                <td class="title p-4"> <p> {$book['title']} </p> </td>
+                                <td class="p-3"> <img src="../img/{$book['thumbnail']}" class="bookCover"> </td>
+                                <td class="title p-3"> <p> {$book['title']} </p> </td>
                                 <td class="description p-4"> <p> {$book['description']} </p> </td> 
-                                <td class="p-4"> <p> {$book['author']} </p> </td>
-                                <td class="p-4"> <p> {$book['genre']} </p> </td>
+                                <td class="p-3"> <p> {$book['author']} </p> </td>
+                                <td class="p-3"> <p> {$book['genre']} </p> </td>
                                 <td class="return p-4"> <p> {$book['return_date']} </p> </td>
-                                <td class="p-4">
+                                <td class="return p-4"> <p> R {$book['price']} </p> </td>
+                                <td class="p-3">
                                 <input type="hidden" name="book_id" value="{$bookId}">
                                 <input type="hidden" name="return_date" value="{$returnDate}">
                                 <button name="rent" type="submit" class="logInButton p-2">Rent</button>
@@ -107,7 +109,7 @@ $availableBooks = bookView();
                     echo $table;
 
                 } else {
-                    echo '<p>No available books found.</p>';
+                    echo '<p>No available books found. <br> All the books have been rented out! </p>';
                 }
                 ?>
             </form>

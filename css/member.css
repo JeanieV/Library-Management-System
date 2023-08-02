@@ -39,6 +39,12 @@ h2{
     color: #2C2929;
 }
 
+h3 {
+    font-size: 25px;
+    text-align: center;
+    color: red; 
+}
+
 p {
     font-size: 18px;
     text-align: center;
@@ -78,6 +84,21 @@ th {
 }
 
 .logInButton:hover {
+    transform: scale(1.1);
+    background-color: #2C2929;
+    color: #E4D9D5;
+    border: none;
+}
+
+.checkoutButton{
+    font-size: 20px;
+    background-color: #821D30;
+    color: #E4D9D5;
+    border-color: #CAC1B0;
+    width: 8vw;
+}
+
+.checkoutButton:hover {
     transform: scale(1.1);
     background-color: #2C2929;
     color: #E4D9D5;
