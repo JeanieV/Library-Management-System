@@ -37,6 +37,16 @@ if (isset($_POST['checkout'])) {
     header("Location: ./thankYou.php");
 }
 
+// Return the book
+if (isset($_POST['returnRentedBook'])) {
+
+}
+
+// Return Old books
+if (isset($_POST['returningOldBooks'])) {
+    header("Location: ./returnBooks.php");
+}
+
 // Database connection function
 function db_connect()
 {
@@ -111,7 +121,7 @@ function creatingUser()
         // If the user has successfully been added to the database
         if (mysqli_stmt_execute($stmt)) {
             echo '<h2 class="p-3">Success: User created successfully! <br> Head back to Home Page for Login</h2>';
-            header("Location: ./newLibrarian.php");
+            exit();
         } else {
             echo 'Error creating user: ' . mysqli_error($mysqli);
         }
@@ -174,11 +184,6 @@ function bookView()
         return;
     }
 
-    // Calculate the return date (7 days from now)
-    if (!isset($_SESSION['return'])) {
-        $returnDate = date('Y-m-d', strtotime('+7 days'));
-        $_SESSION['return'] = $returnDate;
-    }
 
     // Select books from the database where availability is true and not rented out
     $query = "SELECT * FROM books WHERE availability = true AND book_id NOT IN (SELECT book_id FROM rental)";
@@ -196,9 +201,6 @@ function bookView()
 
     $books = array();
     while ($row = mysqli_fetch_assoc($result)) {
-        // Calculate the return date (7 days from now) for each book
-        $returnDate = date('Y-m-d', strtotime('+7 days'));
-        $row['return_date'] = $returnDate;
         $books[] = $row;
     }
 
@@ -223,7 +225,6 @@ function rentalMember()
 
         // Get the book ID and return date from the form submission
         $bookId = $_POST['book_id'];
-        $returnDate = $_POST['return_date'];
 
         // Find the member_id that matches the username
         $username = $_SESSION['username'];
@@ -259,7 +260,7 @@ function rentalMember()
                 echo "<h3 class='my-5'>You have already reached the rental limit of 5 books.<br> Book has not been added!</h3>";
             } else {
                 // Insert the rental information into the rentals table
-                $query = "INSERT INTO rental (member_id, book_id, return_date) VALUES (?, ?, ?)";
+                $query = "INSERT INTO rental (member_id, book_id, return_date) VALUES (?, ?, DATE_ADD(NOW(), INTERVAL 1 WEEK))";
                 $stmt = mysqli_prepare($mysqli, $query);
 
                 if (!$stmt) {
@@ -268,8 +269,8 @@ function rentalMember()
                     return;
                 }
 
-                // Bind the parameters (member_id, book_id and return_date
-                mysqli_stmt_bind_param($stmt, "iis", $memberId, $bookId, $returnDate);
+                // Bind the parameters (member_id and book_id)
+                mysqli_stmt_bind_param($stmt, "ii", $memberId, $bookId);
                 mysqli_stmt_execute($stmt);
 
                 mysqli_stmt_close($stmt);
@@ -330,7 +331,6 @@ function rentalDisplay()
             while ($row2 = mysqli_fetch_assoc($result2)) {
                 $bookId = $row2['book_id'];
                 $rentalId = $row2['rental_id'];
-                $returnDate = $row2['return_date'];
 
                 // Get the necessary information from the books table
                 $query = "SELECT title, thumbnail, return_date, price FROM books WHERE book_id = ?";
@@ -368,7 +368,7 @@ function rentalDisplay()
                         <form method="POST" action="./member.php">
                             <td class="p-5"><img src="../img/{$row['thumbnail']}" alt="Book Thumbnail" class="bookCover"></td>
                             <td class="title p-4"><p> {$row['title']} </p></td>
-                            <td class="p-5"><p> {$returnDate} </p></td>
+                            <td class="p-5"><p> {$row['return_date']} </p></td>
                             <td class="p-5"><p> R {$row['price']} </p></td>
                             <input type="hidden" name="rental_id" value="$rentalId">
                             <td class="p-5"><button type="submit" name="clearRentalButton" class="tranBack"><img class="homeButton mx-3 mt-3"
@@ -501,18 +501,23 @@ if (isset($_POST['returnLibrary'])) {
 }
 
 // Direct to Book changes page
-if(isset($_POST['bookChangesButton'])){
+if (isset($_POST['bookChangesButton'])) {
     header("Location: ./bookChanges.php");
 }
 
 // Direct to Add Book Page
-if(isset($_POST['addBookNew'])){
+if (isset($_POST['addBookNew'])) {
     header("Location: ./addBook.php");
 }
 
 // Return to Book Changes Page
-if(isset($_POST['returnBookChanges'])){
+if (isset($_POST['returnBookChanges'])) {
     header("Location: ./bookChanges.php");
+}
+
+// Update Books Page
+if (isset($_POST['updateBook'])) {
+    header("Location: ./updateBook.php");
 }
 
 // Function to add a new Employee to the website
@@ -520,7 +525,7 @@ function addNewEmployee()
 {
     // If the sign-up button is clicked
     if (isset($_POST['addNewEmployee'])) {
- 
+
         // Store the input fields as variables
         $employee_number = $_POST['employee_number'];
         $fullname = $_POST['fullname'];
@@ -561,7 +566,7 @@ function addBook()
 {
     // If the addNewBook button is clicked
     if (isset($_POST['addnewBook'])) {
- 
+
         // Store the input fields as variables
         $title = $_POST['title'];
         $description = $_POST['description'];
@@ -592,11 +597,294 @@ function addBook()
         } else {
             // Failed to add librarian
             header("Location: ./index.php");
-            
+
             mysqli_close($mysqli);
             exit();
         }
     }
 }
 
+function viewAllBooks()
+{
+
+    // Connect to the database
+    $mysqli = db_connect();
+    if (!$mysqli) {
+        return;
+    }
+
+    $query = "SELECT * FROM books";
+    $result = mysqli_query($mysqli, $query);
+
+    if (mysqli_num_rows($result) > 0) {
+        $heading = <<<DELIMITER
+                            <table>
+                            <tr>
+                                <th> Book Cover </th>
+                                <th> Title </th>
+                                <th> Description </th>
+                                <th> Author </th>
+                                <th> Genre </th>
+                                <th> Return Date </th>
+                                <th> Price </th>
+                            </tr>
+                        DELIMITER;
+        $rows = '';
+
+        while ($row = mysqli_fetch_assoc($result)) {
+
+            $rowHTML = <<<DELIMITER
+                            <tr>
+                                <td class="p-3"> <img src="../img/{$row['thumbnail']}" class="bookCover"> </td>
+                                <td class="title p-3"> <p> {$row['title']} </p> </td>
+                                <td class="description p-4"> <p> {$row['description']} </p> </td> 
+                                <td class="p-3"> <p> {$row['author']} </p> </td>
+                                <td class="p-3"> <p> {$row['genre']} </p> </td>
+                                <td class="return p-4"> <p> {$row['return_date']} </p> </td>
+                                <td class="return p-4"> <p> R {$row['price']} </p> </td>
+                                <td class="edit-link p-3"><a href="editBook.php?book_id=' . {$row['book_id']} . '">Edit</a></td>
+                            </tr>
+                            DELIMITER;
+            $rows .= $rowHTML;
+        }
+
+        $table = <<<DELIMITER
+                        {$heading}
+                        {$rows}
+                        </table>
+                        DELIMITER;
+        echo $table;
+
+    } else {
+        echo 'No books found.';
+    }
+
+    mysqli_free_result($result);
+    mysqli_close($mysqli);
+}
+
+function updateBook()
+{
+    $title = $_POST['title'];
+    $description = $_POST['description'];
+    $thumbnail = $_POST['thumbnail'];
+    $author = $_POST['author'];
+    $genre = $_POST['genre'];
+    $return_date = $_POST['return_date'];
+    $availability = 1;
+    $price = $_POST['price'];
+
+    // Connect to the database
+    $mysqli = db_connect();
+    if (!$mysqli) {
+        return;
+    }
+
+    $librarian = new Librarian($mysqli);
+    $result = $librarian->updateBook($title, $description, $thumbnail, $author, $genre, $return_date, $availability, $price);
+
+    if ($result) {
+        echo 'Book updated successfully.';
+    } else {
+        echo 'Failed to update book.';
+    }
+
+    mysqli_close($mysqli);
+}
+
+
+function returnBooks()
+{
+    // Connect to the database
+    $mysqli = db_connect();
+    if (!$mysqli) {
+        return;
+    }
+
+    // Find the username that matches the member_id
+    $username = $_SESSION['username'];
+    $query = "SELECT member_id FROM member WHERE username = ?";
+    $stmt = mysqli_prepare($mysqli, $query);
+
+    // Bind the parameter (username)
+    mysqli_stmt_bind_param($stmt, "s", $username);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+
+    // If there is information in the rental table
+    if (mysqli_num_rows($result) > 0) {
+        $row = mysqli_fetch_assoc($result);
+        $memberId = $row['member_id'];
+
+        // Find the id's for the specific user
+        $query = "SELECT rental_id, book_id, return_date FROM rental WHERE member_id = ?";
+
+        $stmt2 = mysqli_prepare($mysqli, $query);
+
+        // Bind the member_id to the statement
+        mysqli_stmt_bind_param($stmt2, "i", $memberId);
+        mysqli_stmt_execute($stmt2);
+        $result2 = mysqli_stmt_get_result($stmt2);
+
+        // If there is information in the books table
+        if (mysqli_num_rows($result2) > 0) {
+
+            $rows = '';
+
+            // Get the information from the books table
+            while ($row2 = mysqli_fetch_assoc($result2)) {
+                $bookId = $row2['book_id'];
+                $rentalId = $row2['rental_id'];
+
+                // Get the necessary information from the books table
+                $query = "SELECT title, thumbnail, return_date, price FROM books WHERE book_id = ?";
+
+                $stmt = mysqli_prepare($mysqli, $query);
+
+                // Bind the book_id parameter
+                mysqli_stmt_bind_param($stmt, "i", $bookId);
+                mysqli_stmt_execute($stmt);
+                $result = mysqli_stmt_get_result($stmt);
+
+                // If the table has information in it
+                if (mysqli_num_rows($result) > 0) {
+                    $row = mysqli_fetch_assoc($result);
+
+                    // Display the rented books
+                    $heading = <<<DELIMITER
+                    <div class="d-flex justify-content-center align-items-center">
+                    <table>
+                        <tr>
+                            <th> Book Cover </th>
+                            <th> Title </th>
+                            <th> Return Date </th>
+                        </tr>
+                    DELIMITER;
+
+                    // Concatenate the HTML of each book to $rows
+                    $rowHTML = <<<DELIMETER
+                        <tr>
+                        <div class="d-flex justify-content-center align-items-center">
+                        <form method="POST" action="./member.php">
+                            <td class="p-5"><img src="../img/{$row['thumbnail']}" alt="Book Thumbnail" class="bookCover"></td>
+                            <td class="title p-4"><p> {$row['title']} </p></td>
+                            <td class="p-5"><p> {$row['return_date']} </p></td>
+                            <input type="hidden" name="rental_id" value="$rentalId">
+                            <td class="p-5"><button type="submit" name="returnRentedBook" class="logInButton p-3"> Return </button></td> 
+                        </form>
+                        </div>
+                        </tr>
+                    DELIMETER;
+                    $rows .= $rowHTML;
+
+                } else {
+                    echo "Book not found in the books table.";
+                }
+            }
+
+            $table = <<<DELIMETER
+                {$heading}
+                {$rows}
+                </table>
+                </div>
+            DELIMETER;
+            echo $table;
+
+        } else {
+            echo "<p>You have no books to return!</p>";
+        }
+    }
+
+    mysqli_stmt_close($stmt);
+    mysqli_close($mysqli);
+}
+
+function bookReturn($rentalId)
+{
+    // Connect to the database
+    $mysqli = db_connect();
+    if (!$mysqli) {
+        return false;
+    }
+
+    // Update the rental table to remove the book entry
+    $query = "DELETE FROM rental WHERE rental_id = ?";
+    $stmt = mysqli_prepare($mysqli, $query);
+    mysqli_stmt_bind_param($stmt, "i", $rentalId);
+    $result = mysqli_stmt_execute($stmt);
+    mysqli_stmt_close($stmt);
+
+    if (!$result) {
+        mysqli_close($mysqli);
+        return false;
+    }
+
+    // Get the book_id associated with the rental_id
+    $query = "SELECT book_id FROM rental WHERE rental_id = ?";
+    $stmt = mysqli_prepare($mysqli, $query);
+    mysqli_stmt_bind_param($stmt, "i", $rentalId);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+
+    if (!$result || mysqli_num_rows($result) === 0) {
+        mysqli_stmt_close($stmt);
+        mysqli_close($mysqli);
+        return false;
+    }
+
+    $row = mysqli_fetch_assoc($result);
+    $bookId = $row['book_id'];
+    mysqli_stmt_close($stmt);
+
+    // Get the current return_date from the books table
+    $query = "SELECT return_date FROM books WHERE book_id = ?";
+    $stmt = mysqli_prepare($mysqli, $query);
+    mysqli_stmt_bind_param($stmt, "i", $bookId);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+
+    if (!$result || mysqli_num_rows($result) === 0) {
+        mysqli_stmt_close($stmt);
+        mysqli_close($mysqli);
+        return false;
+    }
+
+    $row = mysqli_fetch_assoc($result);
+    $returnDate = $row['return_date'];
+    mysqli_stmt_close($stmt);
+
+    // Convert the return_date to a Unix timestamp
+    $timestamp = strtotime($returnDate);
+
+    // Add one week to the Unix timestamp
+    $newTimestamp = $timestamp + (7 * 24 * 60 * 60);
+
+    // Convert the new timestamp back to the desired date string format
+    $newReturnDate = date("Y-m-d", $newTimestamp);
+
+    // Update the return_date in the books table
+    $query = "UPDATE books SET return_date = ? WHERE book_id = ?";
+    $stmt = mysqli_prepare($mysqli, $query);
+    mysqli_stmt_bind_param($stmt, "s", $newReturnDate);
+    $result = mysqli_stmt_execute($stmt);
+    mysqli_stmt_close($stmt);
+
+    mysqli_close($mysqli);
+
+    return $result;
+}
+
+function returningBooks()
+{
+
+    // Check if the returnRentedBook button is clicked
+    if (isset($_POST['returnRentedBook'])) {
+        $rentalId = $_POST['rental_id'];
+        $result = bookReturn($rentalId);
+
+        if ($result) {
+            echo 'Successfully returned the book';
+        } 
+    }
+}
 ?>

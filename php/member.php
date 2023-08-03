@@ -9,6 +9,9 @@ if (isset($_SESSION['username'])) {
 
 rentalMember();
 
+returningBooks();
+
+
 // Get the available books
 $availableBooks = bookView();
 ?>
@@ -46,9 +49,9 @@ $availableBooks = bookView();
                 <?php $book1 = <<<DELIMETER
                 <h1> Good day $username! </h1>
 
-                <button type="submit" name="viewOrder" class="tranBack mt-3"><img class="logOutButton mx-3 mt-3"
-                src="../img/list.gif" alt="View Order" title="View Order"
-                attribution="https://www.flaticon.com/free-animated-icons/order"></button>
+                <button type="submit" name="viewOrder" class="orderButton mt-3 mx-5 p-3"> View Order</button>
+
+                <button type="submit" name="returningOldBooks" class="orderButton mt-3 mx-5 p-3"> Return Books </button>
 
                 <h2 class="my-5"> View our available book selection below. </h2>
                 

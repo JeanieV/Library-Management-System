@@ -5,6 +5,7 @@ require './functions.php';
 if (isset($_SESSION['username'])) {
     $username = $_SESSION['username'];
 }
+
 ?>
 
 <!DOCTYPE html>

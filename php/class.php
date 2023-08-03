@@ -34,11 +34,11 @@ class Librarian
     }
 
     // Update book information in the books table
-    public function updateBook($bookId, $title, $author, $price, $thumbnail)
+    public function updateBook($title, $description, $thumbnail, $author, $genre, $return_date, $availability, $price)
     {
-        $query = "UPDATE books SET title=?, author=?, price=?, thumbnail=? WHERE book_id=?";
+        $query = "UPDATE books SET title=?, description=?, $thumbnail=?, author=?, genre=?, return_date=?, availability=?, price=? WHERE book_id=?";
         $stmt = mysqli_prepare($this->mysqli, $query);
-        mysqli_stmt_bind_param($stmt, "ssdsi", $title, $author, $price, $thumbnail, $bookId);
+        mysqli_stmt_bind_param($stmt, "ssbsssii", $title, $description, $thumbnail, $author, $genre, $return_date, $availability, $price);
         $result = mysqli_stmt_execute($stmt);
         mysqli_stmt_close($stmt);
         return $result;
@@ -89,5 +89,6 @@ class Librarian
         mysqli_stmt_close($stmt);
         return $result;
     }
+
 }
 ?>
