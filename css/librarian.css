@@ -1,0 +1,83 @@
+body {
+    background-color: #2F5233;
+}
+
+.homeButton {
+    width: 80px;
+    height: 80px;
+    border-radius: 30px;
+}
+
+.logOutButton{
+    width: 80px;
+    height: 80px;
+}
+
+.tranBack {
+    border: none;
+    background-color: transparent;
+    outline: none;
+}
+
+
+.bookView {
+    background-color: #E4D9D5;
+    border-radius: 35px;
+    width: 90vw;
+    text-align: center;
+}
+
+h1 {
+    font-size: 50px;
+    text-align: center;
+    color: #2C2929;
+}
+
+h2{
+    font-size: 25px;
+    text-align: center;
+    color: #2C2929;
+}
+
+h3 {
+    font-size: 25px;
+    text-align: center;
+    color: red; 
+}
+
+p {
+    font-size: 18px;
+    text-align: center;
+    color: #2C2929;
+}
+
+.logInButton{
+    font-size: 20px;
+    background-color: #821D30;
+    color: #E4D9D5;
+    border-color: #CAC1B0;
+    width: 7vw;
+}
+
+.logInButton:hover {
+    transform: scale(1.1);
+    background-color: #2C2929;
+    color: #E4D9D5;
+    border: none;
+}
+
+.signUpForm {
+    background-color: #E4D9D5;
+    border-radius: 35px;
+    width: 50vw;
+}
+
+.labelStyle {
+    color: #2C2929;
+    font-size: 25px;
+}
+
+.inputStyle {
+    height: 35px;
+    width: 15vw;
+}

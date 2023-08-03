@@ -48,3 +48,9 @@ h1{
     width: max-content;
     border: #E4D9D5 10px solid;
 }
+
+p {
+    font-size: 20px;
+    text-align: center;
+    color: red;
+}

@@ -1,5 +1,6 @@
 <?php
 session_start();
+require './class.php';
 
 // Direct to SignUp Page
 if (isset($_POST['existButton'])) {
@@ -110,6 +111,7 @@ function creatingUser()
         // If the user has successfully been added to the database
         if (mysqli_stmt_execute($stmt)) {
             echo '<h2 class="p-3">Success: User created successfully! <br> Head back to Home Page for Login</h2>';
+            header("Location: ./newLibrarian.php");
         } else {
             echo 'Error creating user: ' . mysqli_error($mysqli);
         }
@@ -443,5 +445,158 @@ function clearRow()
     }
 }
 
+
+// Librarian Section
+
+// Directs the user to the member or sign-up page depending on whether they are on the database
+function employeeLogin()
+{
+    if (isset($_POST['employee_number'])) {
+        $employee_number = $_POST['employee_number'];
+
+        // Connect to the database
+        $mysqli = db_connect();
+        if (!$mysqli) {
+            return;
+        }
+
+        // Check if the email and password match in the database
+        $query = "SELECT * FROM librarian WHERE employee_number = ?";
+
+        // Prepare the statement to bind the parameters (employee_number)
+        $stmt = mysqli_prepare($mysqli, $query);
+        mysqli_stmt_bind_param($stmt, "s", $employee_number);
+        mysqli_stmt_execute($stmt);
+        $result = mysqli_stmt_get_result($stmt);
+
+        // If there is information in the table, find the employee_number that match
+        if (mysqli_num_rows($result) > 0) {
+            $row = mysqli_fetch_assoc($result);
+            $_SESSION['fullname'] = $row['fullname'];
+
+            mysqli_stmt_close($stmt);
+            mysqli_close($mysqli);
+            header("Location: ./library.php");
+            exit();
+        } else {
+            // User does not exist or wrong employee_number, redirect to index.php
+            $_SESSION['loginError'] = "Employee does not exist! <br> Kindly enter correct employee_number";
+
+            mysqli_stmt_close($stmt);
+            mysqli_close($mysqli);
+            header("Location: ./index.php");
+            exit();
+        }
+    }
+}
+
+// Direct to SignUp Page for Employee
+if (isset($_POST['newEmployee'])) {
+    header("Location: ./newLibrarian.php");
+}
+
+// Direct to Library Page
+if (isset($_POST['returnLibrary'])) {
+    header("Location: ./library.php");
+}
+
+// Direct to Book changes page
+if(isset($_POST['bookChangesButton'])){
+    header("Location: ./bookChanges.php");
+}
+
+// Direct to Add Book Page
+if(isset($_POST['addBookNew'])){
+    header("Location: ./addBook.php");
+}
+
+// Return to Book Changes Page
+if(isset($_POST['returnBookChanges'])){
+    header("Location: ./bookChanges.php");
+}
+
+// Function to add a new Employee to the website
+function addNewEmployee()
+{
+    // If the sign-up button is clicked
+    if (isset($_POST['addNewEmployee'])) {
+ 
+        // Store the input fields as variables
+        $employee_number = $_POST['employee_number'];
+        $fullname = $_POST['fullname'];
+        $role = $_POST['role'];
+
+        // Connect to the database
+        $mysqli = db_connect();
+        if (!$mysqli) {
+            return;
+        }
+
+        // Create a new instance of the Librarian class
+        $librarian = new Librarian($mysqli);
+
+        // Call the method from the Librarian class
+        $result = $librarian->addLibrarian($employee_number, $fullname, $role);
+
+        // If the new employee has been added to the librarian table
+        if ($result) {
+            echo '<h2 class="p-3">Success: User created successfully! <br> Head back to Library Page </h2>';
+
+            mysqli_close($mysqli);
+            exit();
+        } else {
+            // Failed to add librarian
+            $_SESSION['addEmployee'] = "<p> New Employee has not been added </p>";
+
+            header("Location: ./index.php");
+            mysqli_close($mysqli);
+            exit();
+        }
+    }
+}
+
+
+// Add new Book to the system
+function addBook()
+{
+    // If the addNewBook button is clicked
+    if (isset($_POST['addnewBook'])) {
+ 
+        // Store the input fields as variables
+        $title = $_POST['title'];
+        $description = $_POST['description'];
+        $thumbnail = $_POST['thumbnail'];
+        $author = $_POST['author'];
+        $genre = $_POST['genre'];
+        $return_date = $_POST['return_date'];
+        $availability = 1;
+        $price = $_POST['price'];
+
+        // Connect to the database
+        $mysqli = db_connect();
+        if (!$mysqli) {
+            return;
+        }
+
+        // Create a new instance of the Librarian class
+        $librarian = new Librarian($mysqli);
+
+        // Call the method from the Librarian class
+        $result = $librarian->addBook($title, $description, $thumbnail, $author, $genre, $return_date, $availability, $price);
+
+        // If the new employee has been added to the librarian table
+        if ($result) {
+            echo '<h2 class="p-3">Success: Book added successfully! <br> Head back to Library Page </h2>';
+            mysqli_close($mysqli);
+            exit();
+        } else {
+            // Failed to add librarian
+            header("Location: ./index.php");
+            
+            mysqli_close($mysqli);
+            exit();
+        }
+    }
+}
 
 ?>

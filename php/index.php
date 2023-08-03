@@ -1,6 +1,18 @@
 <?php
 session_start();
 require './functions.php';
+
+
+// Check if the Member Login form is submitted
+if (isset($_POST['logInButton']) && isset($_POST['email']) && isset($_POST['password'])) {
+    userLogin(); // Process Member Login
+}
+
+// Check if the Staff Login form is submitted
+if (isset($_POST['employeeLoginButton']) && isset($_POST['employee_number'])) {
+    employeeLogin(); // Process Staff Login
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -89,18 +101,29 @@ require './functions.php';
                             <table>
                                 <!-- ID -->
                                 <tr>
-                                    <td class="p-4"><label for="staffId" class="labelStyle"> Staff Id: </label></td>
-                                    <td class="p-4"><input type="email" name="staffId" class="inputStyle" required></td>
+                                    <td class="p-4"><label for="employee_number" class="labelStyle"> Staff Id: </label>
+                                    </td>
+                                    <td class="p-4"><input type="text" name="employee_number" class="inputStyle"
+                                            required></td>
                                 </tr>
                             </table>
                         </div>
 
-                        <!-- Log In Button -->
+                        <!-- Employee Login Button -->
                         <div class="container d-flex justify-content-center align-items-center">
                             <div class="mx-5 mt-3 mb-5">
-                                <button name="logInButton" type="submit" class="logInButton p-2">Log In</button>
+                                <button name="employeeLoginButton" type="submit" class="logInButton p-2">Log In</button>
                             </div>
                         </div>
+                        <?php
+                        // If the employee is not on the system, an error message will show
+                        if (isset($_SESSION['loginError'])) {
+                            echo '<div class="container d-flex justify-content-center align-items-center">';
+                            echo '<p class="text-danger">' . $_SESSION['loginError'] . '</p>';
+                            echo '</div>';
+                            unset($_SESSION['loginError']);
+                        }
+                        ?>
                     </form>
 
                 </div>
