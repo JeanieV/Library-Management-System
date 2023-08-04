@@ -2,21 +2,10 @@
 session_start();
 require './functions.php';
 
-if (isset($_POST['deleteBookFinalButton'])) {
-    $bookId = $_POST['book_id'];
-    $librarian = new Librarian(db_connect());
-    $result = $librarian->deleteBook($bookId);
-
-    if ($result) {
-        // Book deleted successfully, redirect back to the deleteBooks.php
-        header("Location: ./deleteBooks.php");
-        exit();
-    } else {
-        // Failed to delete book, handle the error or redirect to an error page
-        header("Location: ./error.php");
-        exit();
-    }
+if (isset($_SESSION['fullname'])) {
+    $fullname = $_SESSION['fullname'];
 }
+
 
 ?>
 
@@ -49,12 +38,28 @@ if (isset($_POST['deleteBookFinalButton'])) {
     <div class="container d-flex justify-content-center align-items-center">
         <div class="mt-5 mb-5 mx-5">
 
+        
             <form method="POST" class="bookView p-5">
+            <?php
+                // Check if the Sign Up button is clicked
+                if (isset($_POST['deleteBookFinalButton'])) {
+                    deleteFinalBooks();
+                }
+                ?>
 
-                <h1> View all books on the system: </h1>
+                <?php echo "<h1 class='mb-5'> Delete books on the system <br> $fullname: </h1>"; ?>
 
-                <?php deleteBooks(); ?>
+                <?php viewBooksToDelete(); ?>
 
+                <?php
+                // Display error message if set
+                if (isset($_SESSION['notDeleted'])) {
+                    echo '<div class="container d-flex justify-content-center align-items-center">';
+                    echo '<p class="text-danger">' . $_SESSION['notDeleted'] . '</p>';
+                    echo '</div>';
+                    unset($_SESSION['notDeleted']);
+                }
+                ?>
             </form>
         </div>
     </div>

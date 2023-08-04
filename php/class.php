@@ -1,6 +1,5 @@
 <?php
 
-
 class Librarian
 {
     private $mysqli;

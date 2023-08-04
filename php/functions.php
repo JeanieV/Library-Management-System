@@ -520,10 +520,7 @@ if (isset($_POST['updateBook'])) {
     header("Location: ./updateBook.php");
 }
 
-// View Books Page
-if (isset($_POST['readBook'])) {
-    header("Location: ./viewBooks.php");
-}
+
 
 // Function to add a new Employee to the website
 function addNewEmployee()
@@ -609,6 +606,7 @@ function addBook()
     }
 }
 
+// View all books on the system to edit
 function viewAllBooks()
 {
 
@@ -636,7 +634,9 @@ function viewAllBooks()
                         DELIMITER;
         $rows = '';
 
+        // While there is something in the table
         while ($row = mysqli_fetch_assoc($result)) {
+            $bookId = $row['book_id'];
 
             $rowHTML = <<<DELIMITER
                             <tr>
@@ -649,7 +649,7 @@ function viewAllBooks()
                                 <td class="return p-4"> <p> {$row['return_date']} </p> </td>
                                 <td class="return p-4"> <p> R {$row['price']} </p> </td>
                                 <td class="p-4">
-                                    <input type="hidden" name="book_id" value="{$row['book_id']}">
+                                    <input type="hidden" name="book_id" value="$bookId">
                                     <button type="submit" name="editBooks" class="logInButton p-3"> Edit </button>
                                 </td> 
                             </tr>
@@ -672,53 +672,60 @@ function viewAllBooks()
     mysqli_close($mysqli);
 }
 
+// Direct to editBook page
 if (isset($_POST['editBooks'])) {
     header("Location: ./editBook.php");
 }
 
+
+// Function to update books
 function bookUpdate()
 {
     // If the updateFinalBook button is clicked
     if (isset($_POST['updateFinalBook'])) {
 
-        // Store the input fields as variables
-        $title = $_POST['title'];
-        $description = $_POST['description'];
-        $thumbnail = $_POST['thumbnail'];
-        $author = $_POST['author'];
-        $genre = $_POST['genre'];
-        $return_date = $_POST['return_date'];
-        $price = $_POST['price'];
+            $bookId = $_POST['book_id'];
 
-        // Connect to the database
-        $mysqli = db_connect();
-        if (!$mysqli) {
-            return;
+            // Store the input fields as variables
+            $title = $_POST['title'];
+            $description = $_POST['description'];
+            $thumbnail = $_POST['thumbnail'];
+            $author = $_POST['author'];
+            $genre = $_POST['genre'];
+            $return_date = $_POST['return_date'];
+            $availability = 1;
+            $price = $_POST['price'];
+
+            // Connect to the database
+            $mysqli = db_connect();
+            if (!$mysqli) {
+                return;
+            }
+
+            // Create a new instance of the Librarian class
+            $librarian = new Librarian($mysqli);
+
+            // Call the method from the Librarian class
+            $result = $librarian->updateBook($title, $description, $thumbnail, $author, $genre, $return_date, $availability, $price, $bookId);
+
+            // If the new employee has been added to the librarian table
+            if ($result) {
+                echo '<h2 class="p-3">Success: Book updated successfully! <br> Head back to Library Page </h2>';
+
+                mysqli_close($mysqli);
+                exit();
+            } else {
+                // Failed to add librarian
+                $_SESSION['notDeleted'] = "<p> Book has not been deleted </p>";
+
+                header("Location: ./index.php");
+                mysqli_close($mysqli);
+                exit();
+            }
         }
-
-        // Prepare the SQL statement to update the book information in the books table
-        $query = "UPDATE books SET description = ?, thumbnail = ?, author = ?, genre = ?, return_date = ?, price = ? WHERE title = ?";
-        $stmt = mysqli_prepare($mysqli, $query);
-
-        if (!$stmt) {
-            // Error handling if the query preparation fails
-            echo "Error in query: " . mysqli_error($mysqli);
-            return;
-        }
-
-        // Bind the parameters to the statement
-        mysqli_stmt_bind_param($stmt, "sssssss", $description, $thumbnail, $author, $genre, $return_date, $price, $title);
-        mysqli_stmt_execute($stmt);
-
-        // Close the statement and the database connection
-        mysqli_stmt_close($stmt);
-        mysqli_close($mysqli);
-
-        // Redirect to the library page after successful update
-        header("Location: ./library.php");
-        exit();
     }
-}
+
+
 
 function returnBooks()
 {
@@ -901,26 +908,14 @@ function bookReturn($rentalId)
     return $result;
 }
 
-function returningBooks()
-{
-
-    // Check if the returnRentedBook button is clicked
-    if (isset($_POST['returnRentedBook'])) {
-        $rentalId = $_POST['rental_id'];
-        $result = bookReturn($rentalId);
-
-        if ($result) {
-            echo 'Successfully returned the book';
-        }
-    }
-}
-
-if (isset($_POST['deleteBook'])) {
-    header("Location: ./deleteBooks.php");
+// View Books Page
+if (isset($_POST['readBook'])) {
+    header("Location: ./viewBooks.php");
 }
 
 
-function deleteBooks()
+// Function that will be used in the View All Books section
+function readAllBooks()
 {
 
     // Connect to the database
@@ -933,8 +928,6 @@ function deleteBooks()
     $result = mysqli_query($mysqli, $query);
 
     if (mysqli_num_rows($result) > 0) {
-        $bookId = $_POST['book_id'];
-
         $heading = <<<DELIMITER
                             <table>
                             <tr>
@@ -961,8 +954,89 @@ function deleteBooks()
                                 <td class="p-3"> <p> {$row['genre']} </p> </td>
                                 <td class="return p-4"> <p> {$row['return_date']} </p> </td>
                                 <td class="return p-4"> <p> R {$row['price']} </p> </td>
+                            </tr>
+                            DELIMITER;
+            $rows .= $rowHTML;
+        }
+
+        $table = <<<DELIMITER
+                        {$heading}
+                        {$rows}
+                        </table>
+                        DELIMITER;
+        echo $table;
+
+    } else {
+        echo 'No books found.';
+    }
+
+    mysqli_free_result($result);
+    mysqli_close($mysqli);
+}
+
+function returningBooks()
+{
+
+    // Check if the returnRentedBook button is clicked
+    if (isset($_POST['returnRentedBook'])) {
+        $rentalId = $_POST['rental_id'];
+        $result = bookReturn($rentalId);
+
+        if ($result) {
+            echo 'Successfully returned the book';
+        }
+    }
+}
+
+if (isset($_POST['deleteBook'])) {
+    header("Location: ./deleteBooks.php");
+}
+
+
+function viewBooksToDelete()
+{
+
+    // Connect to the database
+    $mysqli = db_connect();
+    if (!$mysqli) {
+        return;
+    }
+
+    $query = "SELECT * FROM books";
+    $result = mysqli_query($mysqli, $query);
+
+    if (mysqli_num_rows($result) > 0) {
+
+        $heading = <<<DELIMITER
+                            <table>
+                            <tr>
+                                <th> Book Cover </th>
+                                <th> Title </th>
+                                <th> Description </th>
+                                <th> Author </th>
+                                <th> Genre </th>
+                                <th> Return Date </th>
+                                <th> Price </th>
+                            </tr>
+                        DELIMITER;
+        $rows = '';
+
+        while ($row = mysqli_fetch_assoc($result)) {
+
+            $bookId = $row['book_id'];
+
+            $rowHTML = <<<DELIMITER
+                            <tr>
+                            
+                                <td class="p-3"> <img src="../img/{$row['thumbnail']}" class="bookCover"> </td>
+                                <td class="title p-3"> <p> {$row['title']} </p> </td>
+                                <td class="description p-4"> <p> {$row['description']} </p> </td> 
+                                <td class="p-3"> <p> {$row['author']} </p> </td>
+                                <td class="p-3"> <p> {$row['genre']} </p> </td>
+                                <td class="return p-4"> <p> {$row['return_date']} </p> </td>
+                                <td class="return p-4"> <p> R {$row['price']} </p> </td>
                                 <td class="p-4">
-                                <input type="hidden" name="book_id" value="$bookId"> <!-- Pass the book_id as a hidden input -->
+                                <input type="hidden" name="book_id" value="$bookId">
                                 <button type="submit" name="deleteBookFinalButton" class="tranBack"><img class="homeButton"
                                     src="../img/bin.gif" alt="Delete Order" title="Delete Order"
                                     attribution="https://www.flaticon.com/free-animated-icons/document"></button>
@@ -987,5 +1061,47 @@ function deleteBooks()
     mysqli_close($mysqli);
 }
 
+function deleteFinalBooks()
+{
 
+    // If the deleteBookFinalButton is clicked
+    if (isset($_POST['deleteBookFinalButton'])) {
+
+        // If there is a rental_id present
+        if (isset($_POST['book_id'])) {
+            $bookId = $_POST['book_id'];
+
+            // Connect to the database
+            $mysqli = db_connect();
+            if (!$mysqli) {
+                return;
+            }
+
+            // Create a new instance of the Librarian class
+            $librarian = new Librarian($mysqli);
+
+            // Call the method from the Librarian class
+            $result = $librarian->deleteBook($bookId);
+
+            // If the new employee has been added to the librarian table
+            if ($result) {
+                echo '<h2 class="p-3">Success: Book Deleted successfully! <br> Head back to Library Page </h2>';
+
+                mysqli_close($mysqli);
+                exit();
+            } else {
+                // Failed to add librarian
+                $_SESSION['notDeleted'] = "<p> Book has not been deleted </p>";
+
+                header("Location: ./index.php");
+                mysqli_close($mysqli);
+                exit();
+            }
+        }
+    }
+}
+
+if(isset($_POST['viewRegisteredMembers'])){
+    header("Location: ./registeredMembers.php");
+}
 ?>

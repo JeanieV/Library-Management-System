@@ -27,8 +27,15 @@ body {
     text-align: center;
 }
 
+.bookView1{
+    background-color: #E4D9D5;
+    border-radius: 35px;
+    width: 50vw;
+    text-align: center;
+}
+
 h1 {
-    font-size: 50px;
+    font-size: 40px;
     text-align: center;
     color: #2C2929;
 }
@@ -43,6 +50,12 @@ h3 {
     font-size: 25px;
     text-align: center;
     color: red; 
+}
+
+h4 {
+    font-size: 20px;
+    text-align: center;
+    color: #2C2929;
 }
 
 p {
@@ -80,6 +93,7 @@ p {
 .inputStyle {
     height: 35px;
     width: 15vw;
+    text-align: center;
 }
 
 .description{
@@ -102,7 +116,7 @@ p {
 
 th {
     text-align: center;
-    font-size: 28px;
+    font-size: 30px;
     color: #821D30;
 }
 
@@ -111,4 +125,19 @@ th {
     border-radius: 35px;
     width: 90vw;
     text-align: center;
+}
+
+.bookChanges{
+    font-size: 20px;
+    background-color: #2F5233;
+    color: #E4D9D5;
+    border-color: #CAC1B0;
+    width: 7vw;
+}
+
+.bookChanges:hover {
+    transform: scale(1.1);
+    background-color: #2C2929;
+    color: #E4D9D5;
+    border: none;
 }

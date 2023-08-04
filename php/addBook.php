@@ -2,6 +2,10 @@
 session_start();
 require './functions.php';
 
+if (isset($_SESSION['fullname'])) {
+    $fullname = $_SESSION['fullname'];
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -43,9 +47,9 @@ require './functions.php';
                 }
                 ?>
 
-                <h1> Add a new book to the system: </h1>
+                <?php echo "<h1 class='mb-4'> Add a new book to the system <br> $fullname: </h1>;" ?>
 
-                <div class="d-flex justify-content-center align-items-center my-4">
+                <div class="d-flex justify-content-center align-items-center">
                     <table>
                         <!-- Title -->
                         <tr>
@@ -95,7 +99,7 @@ require './functions.php';
 
                 <!-- Add New Book Button -->
                 <div class="container d-flex justify-content-center align-items-center">
-                    <div class="mx-5 mt-3 mb-5">
+                    <div class="mx-5 mt-5 mb-5">
                         <button name="addnewBook" type="submit" class="logInButton p-2"> Add Book</button>
                     </div>
 

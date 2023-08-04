@@ -39,42 +39,47 @@ require './functions.php';
 
                 <h1 class="my-5"> Choose what CRUD operation to perform: </h1>
 
-                <h2 class="mt-5 mb-3"> Add new Books to the system: </h2>
+                <table>
+                    <tr>
+                        <!-- Add Book Button -->
+                        <td>
+                            <h2 class="p-5"> Add new Books to the system: </h2>
+                        </td>
+                        <td>
+                            <button name="addBookNew" type="submit" class="bookChanges p-2 mx-5">Add Book</button>
+                        </td>
+                    </tr>
 
-                <!-- Add Book Button -->
-                <div class="container d-flex justify-content-center align-items-center">
-                    <div class="mx-5 mt-3 mb-3">
-                        <button name="addBookNew" type="submit" class="logInButton p-2">Add Book</button>
-                    </div>
-                </div>
+                    <tr>
+                        <!-- Update Book Button -->
+                        <td>
+                            <h2 class="p-5"> Update Existing Books on the system: </h2>
+                        </td>
+                        <td>
+                            <button name="updateBook" type="submit" class="bookChanges p-2 mx-5">Update Book</button>
+                        </td>
+                    </tr>
 
-                <h2 class="mt-3 mb-3"> Update Existing Books on the system: </h2>
+                    <tr>
+                        <!-- Read Book Button -->
+                        <td>
+                            <h2 class="p-5"> View Current Books on the system: </h2>
+                        </td>
+                        <td>
+                            <button name="readBook" type="submit" class="bookChanges p-2 mx-5">View Books</button>
+                        </td>
+                    </tr>
 
-                <!-- Update Book Button -->
-                <div class="container d-flex justify-content-center align-items-center">
-                    <div class="mx-5 mt-3 mb-3">
-                        <button name="updateBook" type="submit" class="logInButton p-2">Update Book</button>
-                    </div>
-                </div>
-
-                <h2 class="mt-3 mb-3"> View Current Books on the system: </h2>
-
-                <!-- Read Book Button -->
-                <div class="container d-flex justify-content-center align-items-center">
-                    <div class="mx-5 mt-3 mb-3">
-                        <button name="readBook" type="submit" class="logInButton p-2">View Books</button>
-                    </div>
-                </div>
-
-                <h2 class="mt-3 mb-3"> Delete Books on the system: </h2>
-
-                <!-- Delete Book Button -->
-                <div class="container d-flex justify-content-center align-items-center">
-                    <div class="mx-5 mt-3 mb-3">
-                        <button name="deleteBook" type="submit" class="logInButton p-2">Delete Books</button>
-                    </div>
-                </div>
-
+                    <tr>
+                        <!-- Delete Book Button -->
+                        <td>
+                            <h2 class="p-5"> Delete Books on the system: </h2>
+                        </td>
+                        <td>
+                            <button name="deleteBook" type="submit" class="bookChanges p-2 mx-5">Delete Books</button>
+                        </td>
+                    </tr>
+                </table>
             </form>
         </div>
     </div>

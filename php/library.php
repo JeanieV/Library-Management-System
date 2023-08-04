@@ -33,40 +33,59 @@ if (isset($_SESSION['fullname'])) {
                 attribution="https://www.flaticon.com/free-animated-icons/home"></button>
     </form>
 
+
     <div class="container d-flex justify-content-center align-items-center">
-        <div class="mt-5 mb-5">
 
+
+        <form method="POST" name="bookView" class="bookView1 p-5">
             <!-- This will make sure that the fullname is known throughout the website -->
-
-            <form method="POST" name="bookView" class="bookView p-5">
-
-                <?php $book1 = <<<DELIMETER
+            <?php $book1 = <<<DELIMETER
                 <h1 class="mb-5"> Welcome, $fullname! </h1>   
-                <p> Here you can manage Library Books! </p>
+                <h2> Here you can manage Library Books! </h2>
                 DELIMETER;
-                echo $book1;
-                ?>
+            echo $book1;
+            ?>
 
-                <h2 class="mt-5 mb-2"> Add new Librarians to the system </h2>
+            <div class="d-flex justify-content-center align-items-center">
+                <div class="mt-5 mb-5">
+                    <table>
+                        <tr>
+                            <!-- New Librarian Button -->
+                            <td>
+                                <h4 class="p-5"> Add new Librarians to the system </h4>
+                            </td>
+                            <td>
+                                <button name="newEmployee" type="submit" class="logInButton p-2 mx-5">Add</button>
+                            </td>
+                        </tr>
 
-                <!-- New Librarian Button -->
-                <div class="container d-flex justify-content-center align-items-center">
-                    <div class="mx-5 mt-1">
-                        <button name="newEmployee" type="submit" class="logInButton p-2">Add</button>
-                    </div>
+                        <tr>
+
+                            <!-- Book Button -->
+                            <td>
+                                <h4 class="p-5"> Make changes to the Books on the system </h4>
+                            </td>
+                            <td>
+                                <button name="bookChangesButton" type="submit" class="logInButton p-2 mx-5"> Change
+                                </button>
+                            </td>
+                        </tr>
+
+                        <tr>
+                            <!-- User Button -->
+                            <td>
+                                <h4 class="p-5"> View registered members </h4>
+                            </td>
+                            <td>
+                                <button name="viewRegisteredMembers" type="submit" class="logInButton p-2 mx-5"> View
+                                </button>
+                            </td>
+                        </tr>
+
+                    </table>
                 </div>
-
-                <h2 class="mt-5 mb-2"> Make changes to the Books on the system </h2>
-
-                <!-- Book Button -->
-                <div class="container d-flex justify-content-center align-items-center">
-                    <div class="mx-5 mt-1">
-                        <button name="bookChangesButton" type="submit" class="logInButton p-2"> Change </button>
-                    </div>
-                </div>
-            </form>
-
-        </div>
+            </div>
+        </form>
     </div>
 
 </body>

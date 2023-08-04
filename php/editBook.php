@@ -4,8 +4,8 @@ require './functions.php';
 
 
 // Public username
-if (isset($_SESSION['username'])) {
-    $username = $_SESSION['username'];
+if (isset($_SESSION['fullname'])) {
+    $fullname = $_SESSION['fullname'];
 }
 
 ?>
@@ -44,6 +44,8 @@ if (isset($_SESSION['username'])) {
                     bookUpdate();
                 }
                 ?>
+
+                <?php echo "<h1 class='mb-4'> $fullname, make a book update: </h1>;" ?>
 
                 <div class="d-flex justify-content-center align-items-center my-4">
                     <table>

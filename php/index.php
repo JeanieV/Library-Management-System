@@ -95,13 +95,13 @@ if (isset($_POST['employeeLoginButton']) && isset($_POST['employee_number'])) {
 
                     <form method="POST" action="index.php">
 
-                        <h2> Staff Login:</h2>
+                        <h2> Librarian Login:</h2>
 
                         <div class="d-flex justify-content-center align-items-center my-4">
                             <table>
                                 <!-- ID -->
                                 <tr>
-                                    <td class="p-4"><label for="employee_number" class="labelStyle"> Staff Id: </label>
+                                    <td class="p-4"><label for="employee_number" class="labelStyle"> Employee Number: </label>
                                     </td>
                                     <td class="p-4"><input type="text" name="employee_number" class="inputStyle"
                                             required></td>

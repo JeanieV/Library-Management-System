@@ -2,6 +2,10 @@
 session_start();
 require './functions.php';
 
+if (isset($_SESSION['fullname'])) {
+    $fullname = $_SESSION['fullname'];
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -35,10 +39,9 @@ require './functions.php';
 
             <form method="POST" class="bookView p-5">
 
-                <h1> View all books on the system: </h1>
-
+            <?php echo "<h1 class='mb-4'> View all books on the system <br> $fullname: </h1>;" ?>
                 <div class="d-flex justify-content-center align-items-center my-4">
-                    <?php viewAllBooks(); ?>
+                    <?php readAllBooks(); ?>
                 </div>
 
             </form>
