@@ -57,29 +57,6 @@ class Librarian
         return $result;
     }
 
-    // Get a list of all members
-    public function getAllMembers()
-    {
-        $query = "SELECT * FROM member";
-        $result = mysqli_query($this->mysqli, $query);
-        $members = mysqli_fetch_all($result, MYSQLI_ASSOC);
-        mysqli_free_result($result);
-        return $members;
-    }
-
-    // Get books rented by a specific member
-    public function getRentedBooksForMember($memberId)
-    {
-        $query = "SELECT b.* FROM rental r JOIN books b ON r.book_id = b.book_id WHERE r.member_id=?";
-        $stmt = mysqli_prepare($this->mysqli, $query);
-        mysqli_stmt_bind_param($stmt, "i", $memberId);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        $books = mysqli_fetch_all($result, MYSQLI_ASSOC);
-        mysqli_free_result($result);
-        mysqli_stmt_close($stmt);
-        return $books;
-    }
 
     // Suspend a member account
     public function suspendMemberAccount($memberId)

@@ -109,6 +109,9 @@ p {
     font-weight: bold;
 }
 
+.username{
+    width: 15vw;
+}
 .bookCover{
     width: 200px;
     height: 210px;

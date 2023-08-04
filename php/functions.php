@@ -684,46 +684,46 @@ function bookUpdate()
     // If the updateFinalBook button is clicked
     if (isset($_POST['updateFinalBook'])) {
 
-            $bookId = $_POST['book_id'];
+        $bookId = $_POST['book_id'];
 
-            // Store the input fields as variables
-            $title = $_POST['title'];
-            $description = $_POST['description'];
-            $thumbnail = $_POST['thumbnail'];
-            $author = $_POST['author'];
-            $genre = $_POST['genre'];
-            $return_date = $_POST['return_date'];
-            $availability = 1;
-            $price = $_POST['price'];
+        // Store the input fields as variables
+        $title = $_POST['title'];
+        $description = $_POST['description'];
+        $thumbnail = $_POST['thumbnail'];
+        $author = $_POST['author'];
+        $genre = $_POST['genre'];
+        $return_date = $_POST['return_date'];
+        $availability = 1;
+        $price = $_POST['price'];
 
-            // Connect to the database
-            $mysqli = db_connect();
-            if (!$mysqli) {
-                return;
-            }
+        // Connect to the database
+        $mysqli = db_connect();
+        if (!$mysqli) {
+            return;
+        }
 
-            // Create a new instance of the Librarian class
-            $librarian = new Librarian($mysqli);
+        // Create a new instance of the Librarian class
+        $librarian = new Librarian($mysqli);
 
-            // Call the method from the Librarian class
-            $result = $librarian->updateBook($title, $description, $thumbnail, $author, $genre, $return_date, $availability, $price, $bookId);
+        // Call the method from the Librarian class
+        $result = $librarian->updateBook($title, $description, $thumbnail, $author, $genre, $return_date, $availability, $price, $bookId);
 
-            // If the new employee has been added to the librarian table
-            if ($result) {
-                echo '<h2 class="p-3">Success: Book updated successfully! <br> Head back to Library Page </h2>';
+        // If the new employee has been added to the librarian table
+        if ($result) {
+            echo '<h2 class="p-3">Success: Book updated successfully! <br> Head back to Library Page </h2>';
 
-                mysqli_close($mysqli);
-                exit();
-            } else {
-                // Failed to add librarian
-                $_SESSION['notDeleted'] = "<p> Book has not been deleted </p>";
+            mysqli_close($mysqli);
+            exit();
+        } else {
+            // Failed to add librarian
+            $_SESSION['notDeleted'] = "<p> Book has not been deleted </p>";
 
-                header("Location: ./index.php");
-                mysqli_close($mysqli);
-                exit();
-            }
+            header("Location: ./index.php");
+            mysqli_close($mysqli);
+            exit();
         }
     }
+}
 
 
 
@@ -1101,7 +1101,145 @@ function deleteFinalBooks()
     }
 }
 
-if(isset($_POST['viewRegisteredMembers'])){
+if (isset($_POST['viewRegisteredMembers'])) {
     header("Location: ./registeredMembers.php");
 }
+
+function registeredMembersFinal()
+{
+    // Connect to the database
+    $mysqli = db_connect();
+    if (!$mysqli) {
+        return;
+    }
+
+    $query = "SELECT * FROM member";
+    $result = mysqli_query($mysqli, $query);
+
+    if (mysqli_num_rows($result) > 0) {
+
+        $heading = <<<DELIMITER
+                            <table>
+                            <tr>
+                                <th> Username </th>
+                                <th> Fullname </th>
+                                <th> Address </th>
+                                <th> Password </th>
+                                <th> Email </th>
+                            </tr>
+                        DELIMITER;
+        $rows = '';
+
+        while ($row = mysqli_fetch_assoc($result)) {
+            $memberId = $row['member_id'];
+
+            $rowHTML = <<<DELIMITER
+                            <tr>
+                                <td class="username p-4"> <p> {$row['username']} </td>
+                                <td class="username p-4"> <p> {$row['fullname']} </td>
+                                <td class="username p-4"> <p> {$row['address']} </td>
+                                <td class="username p-4"> <p> {$row['password']} </td>
+                                <td class="username p-4"> <p> {$row['email']} </td>
+                                <td class="username p-4">
+                                <form method="POST" action="./viewRentedBooks.php">
+                                    <input type="hidden" name="member_id" value="$memberId">
+                                    <button type="submit" name="viewRentedMemberBooks" class="logInButton p-2"> View Rentals </button>
+                                </form>
+                                </td> 
+                            </tr>
+                            DELIMITER;
+            $rows .= $rowHTML;
+        }
+
+        $table = <<<DELIMITER
+                        {$heading}
+                        {$rows}
+                        </table>
+                        DELIMITER;
+        echo $table;
+
+    } else {
+        echo 'No members found.';
+    }
+
+    mysqli_free_result($result);
+    mysqli_close($mysqli);
+}
+
+// Return back to the page where the librarian can view the members registered
+if (isset($_POST['returnMemberViewPage'])) {
+    header("Location: ./registeredMembers.php");
+}
+
+// Go to the rented page if the user clicks on viewRentedMemberBooks
+if (isset($_POST['viewRentedMemberBooks'])) {
+    if (isset($_POST['member_id'])) {
+        $_SESSION['selected_member_id'] = $_POST['member_id'];
+    }
+    header("Location: ./viewRentedBooks.php");
+}
+
+function viewRentedBooks($memberId)
+{
+    // Connect to the database
+    $mysqli = db_connect();
+    if (!$mysqli) {
+        return;
+    }
+
+    // Use the SQL JOIN to fetch rental information along with associated member and book details
+    $query = "SELECT r.*, m.fullname, b.title, b.thumbnail 
+              FROM rental r
+              INNER JOIN member m ON r.member_id = m.member_id
+              INNER JOIN books b ON r.book_id = b.book_id
+              WHERE r.member_id = ?";
+    $stmt = mysqli_prepare($mysqli, $query);
+    mysqli_stmt_bind_param($stmt, "i", $memberId);
+    mysqli_stmt_execute($stmt);
+    $result = mysqli_stmt_get_result($stmt);
+
+    if (mysqli_num_rows($result) > 0) {
+        $heading = <<<DELIMITER
+            <table>
+            <tr>
+                <th> Rental ID </th>
+                <th> Book Cover </th>
+                <th> Title </th>
+                <th> Member Name </th>
+                <th> Return Date </th>
+                <th> Price </th>
+            </tr>
+        DELIMITER;
+        $rows = '';
+
+        while ($row = mysqli_fetch_assoc($result)) {
+            $rowHTML = <<<DELIMITER
+                <tr>
+                    <td class="p-5"> {$row['rental_id']} </td>
+                    <td class="p-5"><img src="../img/{$row['thumbnail']}" alt="Book Thumbnail" class="bookCover"></td>
+                    <td class="title p-4"> <p> {$row['title']} </p></td>
+                    <td class="username p-4"> <p> {$row['fullname']} </p></td>
+                    <td class="p-5"> <p> {$row['return_date']} </p></td>
+                    <td class="p-5"> <p> R {$row['price']} </p></td>
+                </tr>
+            DELIMITER;
+            $rows .= $rowHTML;
+        }
+
+        $table = <<<DELIMITER
+            {$heading}
+            {$rows}
+            </table>
+        DELIMITER;
+        echo $table;
+    } else {
+        echo 'No rentals found.';
+    }
+
+    mysqli_free_result($result);
+    mysqli_close($mysqli);
+}
+
+
+
 ?>

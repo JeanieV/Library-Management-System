@@ -6,7 +6,6 @@ if (isset($_SESSION['fullname'])) {
     $fullname = $_SESSION['fullname'];
 }
 
-
 ?>
 
 <!DOCTYPE html>
@@ -15,7 +14,7 @@ if (isset($_SESSION['fullname'])) {
 <head>
     <meta charset='utf-8'>
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
-    <title>View Book Page</title>
+    <title>View Rentals Page</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
@@ -29,7 +28,7 @@ if (isset($_SESSION['fullname'])) {
 
     <!-- Return Home Button -->
     <form method="POST">
-        <button type="submit" name="returnLibrary" class="tranBack"><img class="homeButton mx-3 mt-3"
+        <button type="submit" name="returnMemberViewPage" class="tranBack"><img class="homeButton mx-3 mt-3"
                 src="../img/home1.gif" alt="Back to Home Page" title="Back to Home Page"
                 attribution="https://www.flaticon.com/free-animated-icons/home"></button>
     </form>
@@ -39,12 +38,19 @@ if (isset($_SESSION['fullname'])) {
         <div class="mt-5 mb-5 mx-5">
 
             <form method="POST" class="bookView p-5">
-                
-                <?php echo "<h1 class='mb-4'> View registered members on the system <br> $fullname: </h1>"; ?>
+
+                <?php echo "<h1 class='mb-4'> View rentals for the members registered <br> $fullname: </h1>"; ?>
 
                 <div class="container d-flex justify-content-center align-items-center">
                     <div class="mt-5 mb-5 mx-5">
-                        <?php registeredMembersFinal(); ?>
+                        <?php
+                        if (isset($_SESSION['selected_member_id'])) {
+                            $memberId = $_SESSION['selected_member_id'];
+                            viewRentedBooks($memberId);
+                        } else {
+                            echo 'No member selected.';
+                        }
+                        ?>
                     </div>
                 </div>
 
