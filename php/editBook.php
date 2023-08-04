@@ -8,6 +8,10 @@ if (isset($_SESSION['fullname'])) {
     $fullname = $_SESSION['fullname'];
 }
 
+if (isset($_SESSION['updateFinalBook'])) {
+    bookUpdate();
+}
+
 ?>
 
 <!DOCTYPE html>
@@ -36,16 +40,11 @@ if (isset($_SESSION['fullname'])) {
 
     <div class="container d-flex justify-content-center align-items-center">
         <div class="mt-5 mb-5 mx-5">
-            <form method="POST" class="bookView p-5" action="updateBook.php">
+            <form method="POST" class="bookView p-5" action="editBook.php">
 
-            <?php
-                // Check if the Add Book button is clicked
-                if (isset($_POST['updateFinalBook'])) {
-                    bookUpdate();
-                }
-                ?>
+                <?php echo "<h1 class='mb-4'> $fullname, make a book update: </h1>" ?>
 
-                <?php echo "<h1 class='mb-4'> $fullname, make a book update: </h1>;" ?>
+               
 
                 <div class="d-flex justify-content-center align-items-center my-4">
                     <table>
@@ -93,12 +92,12 @@ if (isset($_SESSION['fullname'])) {
                             <td class="p-4"><label for="price" class="labelStyle"> Price: </label></td>
                             <td class="p-4"><input type="text" name="price" class="inputStyle"></td>
                         </tr>
-                        <input type="hidden" name="book_id" value="<?php echo $bookId; ?>">
 
                     </table>
                 </div>
-
+               
                 <button type="submit" name="updateFinalBook" class="logInButton p-3">Update Book</button>
+                
             </form>
         </div>
     </div>

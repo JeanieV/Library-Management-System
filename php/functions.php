@@ -672,21 +672,30 @@ function viewAllBooks()
     mysqli_close($mysqli);
 }
 
-// Direct to editBook page
-if (isset($_POST['editBooks'])) {
-    header("Location: ./editBook.php");
+
+function editBookFinal(){
+
+     // If there is a rental_id present
+     if (isset($_POST['book_id'])) {
+        
+        header("Location: ./editBook.php");
+     }
 }
 
 
 // Function to update books
 function bookUpdate()
 {
-    // If the updateFinalBook button is clicked
-    if (isset($_POST['updateFinalBook'])) {
-
-        $bookId = $_POST['book_id'];
+   
+    if(isset($_POST['book_id'])){
+        // Connect to the database
+        $mysqli = db_connect();
+        if (!$mysqli) {
+            return;
+        }
 
         // Store the input fields as variables
+        $bookId = $_POST['book_id'];
         $title = $_POST['title'];
         $description = $_POST['description'];
         $thumbnail = $_POST['thumbnail'];
@@ -696,34 +705,23 @@ function bookUpdate()
         $availability = 1;
         $price = $_POST['price'];
 
-        // Connect to the database
-        $mysqli = db_connect();
-        if (!$mysqli) {
-            return;
-        }
-
         // Create a new instance of the Librarian class
         $librarian = new Librarian($mysqli);
 
         // Call the method from the Librarian class
-        $result = $librarian->updateBook($title, $description, $thumbnail, $author, $genre, $return_date, $availability, $price, $bookId);
+        $result = $librarian->updateBook($bookId, $title, $description, $thumbnail, $author, $genre, $return_date, $availability, $price);
 
-        // If the new employee has been added to the librarian table
+        // If the book has been updated
         if ($result) {
-            echo '<h2 class="p-3">Success: Book updated successfully! <br> Head back to Library Page </h2>';
-
-            mysqli_close($mysqli);
-            exit();
-        } else {
-            // Failed to add librarian
-            $_SESSION['notDeleted'] = "<p> Book has not been deleted </p>";
-
-            header("Location: ./index.php");
-            mysqli_close($mysqli);
-            exit();
+            echo "Successful!";
+        }
+        else {
+            echo "could not update";
         }
     }
 }
+
+
 
 
 
@@ -1229,9 +1227,10 @@ function viewRentedBooks($memberId)
     mysqli_close($mysqli);
 }
 
-if(isset($_POST['suspendGo'])){
+if (isset($_POST['suspendGo'])) {
     header("Location: ./suspend.php");
 }
+
 
 function suspendAccount()
 {
@@ -1239,6 +1238,14 @@ function suspendAccount()
     $mysqli = db_connect();
     if (!$mysqli) {
         return;
+    }
+
+    // Check if the form is submitted (suspendButton is clicked)
+    if (isset($_POST['suspendButton']) && isset($_POST['rental_id'])) {
+        $rentalId = $_POST['rental_id'];
+
+        // Call the function to suspend the rental
+        suspendRental($mysqli, $rentalId);
     }
 
     // Use the SQL JOIN to fetch rental information along with associated member and book details
@@ -1266,7 +1273,6 @@ function suspendAccount()
         while ($row = mysqli_fetch_assoc($result)) {
             // Check if the return date has passed for each rental
             $status = ($row['return_date'] < date("Y-m-d")) ? "Returned" : "Outstanding";
-            $isSuspendable = (strtotime($row['return_date']) < strtotime("-1 week"));
 
             $rowHTML = <<<DELIMITER
                 <tr>
@@ -1277,7 +1283,10 @@ function suspendAccount()
                     <td class="username p-4"> <p> R {$row['price']} </p></td>
                     <td class="username p-4"> <p> {$status} </p></td>
                     <td class="username p-4"> 
-                        {($isSuspendable) ? '<button type="button" class="logInButton p-2">Suspend Account</button>' : ''}
+                        <form action="" method="post">
+                            <input type="hidden" name="rental_id" value="{$row['rental_id']}">
+                            <button type="submit" name="suspendButton" class="logInButton p-2">Suspend Account</button>
+                        </form>
                     </td>
                 </tr>
             DELIMITER;
@@ -1297,5 +1306,21 @@ function suspendAccount()
     mysqli_free_result($result);
     mysqli_close($mysqli);
 }
+
+function suspendRental($mysqli, $rentalId)
+{
+    // Use the rental_id to remove the rental record from the rental table
+    $query = "DELETE FROM rental WHERE rental_id = ?";
+    $stmt = mysqli_prepare($mysqli, $query);
+    mysqli_stmt_bind_param($stmt, "i", $rentalId);
+    $result = mysqli_stmt_execute($stmt);
+    mysqli_stmt_close($stmt);
+
+    if($result){
+        echo '<h3 class="mb-5">You suspended the member! <br> Their Rental has been removed </h3>';
+    }
+}
+
+
 
 ?>

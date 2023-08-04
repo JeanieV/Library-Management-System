@@ -40,13 +40,14 @@ bookUpdate();
 
             <form method="POST" class="bookView p-5">
 
-            <?php echo "<h1 class='mb-4'> Update existing books on the system <br> $fullname: </h1>;" ?>
+            <?php echo "<h1 class='mb-4'> Update existing books on the system <br> $fullname: </h1>" ?>
 
                 <div class="d-flex justify-content-center align-items-center my-4">
                     <?php viewAllBooks(); ?>
+                    <?php  editBookFinal(); ?>
                 </div>
-
             </form>
+
         </div>
     </div>
 </body>

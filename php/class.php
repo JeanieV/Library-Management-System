@@ -33,7 +33,7 @@ class Librarian
     }
 
     // Update book information in the books table
-    public function updateBook($title, $description, $thumbnail, $author, $genre, $return_date, $availability, $price, $bookId)
+    public function updateBook($bookId, $title, $description, $thumbnail, $author, $genre, $return_date, $availability, $price)
 {
     $query = "UPDATE books SET title=?, description=?, thumbnail=?, author=?, genre=?, return_date=?, availability=?, price=? WHERE book_id=?";
     $stmt = mysqli_prepare($this->mysqli, $query);
