@@ -2,37 +2,19 @@
 session_start();
 require './functions.php';
 
-// Get the book_id from the URL parameter
-if (isset($_GET['book_id'])) {
-    $bookId = $_GET['book_id'];
-} else {
-    echo 'Invalid book ID.';
-    exit();
+
+// Public username
+if (isset($_SESSION['username'])) {
+    $username = $_SESSION['username'];
 }
 
-// Fetch the book details from the database
-$mysqli = db_connect();
-if (!$mysqli) {
-    echo 'Database connection error.';
-    exit();
-}
-
-$query = "SELECT * FROM books WHERE book_id = ?";
-$stmt = mysqli_prepare($mysqli, $query);
-mysqli_stmt_bind_param($stmt, "i", $bookId);
-
-mysqli_stmt_execute($stmt);
-$result = mysqli_stmt_get_result($stmt);
-$book = mysqli_fetch_assoc($result);
-mysqli_stmt_close($stmt);
-mysqli_close($mysqli);
 ?>
 
 <!DOCTYPE html>
 <html>
 
 <head>
-<meta charset='utf-8'>
+    <meta charset='utf-8'>
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
     <title>Edit Book Page</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
@@ -45,31 +27,77 @@ mysqli_close($mysqli);
 </head>
 
 <body>
-    <h1>Edit Book Details</h1>
+    <!-- Return Home Button -->
+    <form method="POST">
+        <button type="submit" name="returnBookChanges" class="tranBack"><img class="homeButton mx-3 mt-3"
+                src="../img/home1.gif" alt="Back to Home Page" title="Back to Home Page"
+                attribution="https://www.flaticon.com/free-animated-icons/home"></button>
+    </form>
 
-    <?php
-    // Display the book details in a form
-    if ($book) {
+    <div class="container d-flex justify-content-center align-items-center">
+        <div class="mt-5 mb-5 mx-5">
+            <form method="POST" class="bookView p-5" action="updateBook.php">
 
-        
+            <?php
+                // Check if the Add Book button is clicked
+                if (isset($_POST['updateFinalBook'])) {
+                    bookUpdate();
+                }
+                ?>
 
-        echo '<form method="POST">';
-        echo '<input type="hidden" name="book_id" value="' . $book['book_id'] . '">';
-        echo 'Title: <input type="text" name="title" value="' . $book['title'] . '"><br>';
-        echo 'Description: <input type="text" name="description" value="' . $book['description'] . '"><br>';
-        echo 'Thumbnail: <input type="text" name="thumbnail" value="' . $book['thumbnail'] . '"><br>';
-        echo 'Author: <input type="text" name="author" value="' . $book['author'] . '"><br>';
-        echo 'Genre: <input type="text" name="genre" value="' . $book['genre'] . '"><br>';
-        echo 'Return Date: <input type="date" name="return_date" value="' . $book['return_date'] . '"><br>';
-        echo 'Price: <input type="text" name="price" value="' . $book['price'] . '"><br>';
-        echo '<input type="submit" name="updateBook" value="Update">';
-        
-        echo '</form>';
-        updateBook();
-    } else {
-        echo 'Book not found.';
-    }
-    ?>
+                <div class="d-flex justify-content-center align-items-center my-4">
+                    <table>
+                        <!-- Title -->
+                        <tr>
+                            <td class="p-4"><label for="title" class="labelStyle"> Title: </label></td>
+                            <td class="p-4"><input type="text" name="title" class="inputStyle"></td>
+                        </tr>
+
+                        <!-- Description-->
+                        <tr>
+                            <td class="p-4"><label for="description" class="labelStyle"> Description: </label>
+                            </td>
+                            <td class="p-4"><input type="text" name="description" class="inputStyle"></td>
+                        </tr>
+
+                        <!-- Thumbnail -->
+                        <tr>
+                            <td class="p-4"><label for="thumbnail" class="labelStyle"> Thumbnail (optional): </label>
+                            </td>
+                            <td class="p-4"><input type="text" name="thumbnail" class="inputStyle"></td>
+                        </tr>
+
+                        <!-- Author -->
+                        <tr>
+                            <td class="p-4"><label for="author" class="labelStyle"> Author: </label></td>
+                            <td class="p-4"><input type="text" name="author" class="inputStyle"></td>
+                        </tr>
+
+                        <!-- Genre -->
+                        <tr>
+                            <td class="p-4"><label for="genre" class="labelStyle"> Genre: </label></td>
+                            <td class="p-4"><input type="text" name="genre" class="inputStyle"></td>
+                        </tr>
+
+                        <!-- Return Date -->
+                        <tr>
+                            <td class="p-4"><label for="return_date" class="labelStyle"> Return Date: </label></td>
+                            <td class="p-4"><input type="date" name="return_date" class="inputStyle"></td>
+                        </tr>
+
+                        <!-- Price -->
+
+                        <tr>
+                            <td class="p-4"><label for="price" class="labelStyle"> Price: </label></td>
+                            <td class="p-4"><input type="text" name="price" class="inputStyle"></td>
+                        </tr>
+                    </table>
+                </div>
+
+                <button type="submit" name="updateFinalBook" class="logInButton p-3">Update Book</button>
+            </form>
+        </div>
+    </div>
 </body>
 
 </html>
