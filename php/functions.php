@@ -833,6 +833,7 @@ function returnBooks()
     mysqli_close($mysqli);
 }
 
+
 function bookReturn($rentalId)
 {
     // Connect to the database
@@ -841,20 +842,8 @@ function bookReturn($rentalId)
         return false;
     }
 
-    // Update the rental table to remove the book entry
-    $query = "DELETE FROM rental WHERE rental_id = ?";
-    $stmt = mysqli_prepare($mysqli, $query);
-    mysqli_stmt_bind_param($stmt, "i", $rentalId);
-    $result = mysqli_stmt_execute($stmt);
-    mysqli_stmt_close($stmt);
-
-    if (!$result) {
-        mysqli_close($mysqli);
-        return false;
-    }
-
     // Get the book_id associated with the rental_id
-    $query = "SELECT book_id FROM rental WHERE rental_id = ?";
+    $query = "SELECT book_id, return_date FROM rental WHERE rental_id = ?";
     $stmt = mysqli_prepare($mysqli, $query);
     mysqli_stmt_bind_param($stmt, "i", $rentalId);
     mysqli_stmt_execute($stmt);
@@ -868,29 +857,24 @@ function bookReturn($rentalId)
 
     $row = mysqli_fetch_assoc($result);
     $bookId = $row['book_id'];
+    $returnDate = $row['return_date'];
     mysqli_stmt_close($stmt);
 
-    // Get the current return_date from the books table
-    $query = "SELECT return_date FROM books WHERE book_id = ?";
+    // Remove the book entry from the rental table
+    $query = "DELETE FROM rental WHERE rental_id = ?";
     $stmt = mysqli_prepare($mysqli, $query);
-    mysqli_stmt_bind_param($stmt, "i", $bookId);
-    mysqli_stmt_execute($stmt);
-    $result = mysqli_stmt_get_result($stmt);
+    mysqli_stmt_bind_param($stmt, "i", $rentalId);
+    $result = mysqli_stmt_execute($stmt);
+    mysqli_stmt_close($stmt);
 
-    if (!$result || mysqli_num_rows($result) === 0) {
-        mysqli_stmt_close($stmt);
+    if (!$result) {
         mysqli_close($mysqli);
         return false;
     }
 
-    $row = mysqli_fetch_assoc($result);
-    $returnDate = $row['return_date'];
-    mysqli_stmt_close($stmt);
-
-    // Convert the return_date to a Unix timestamp
     $timestamp = strtotime($returnDate);
 
-    // Add one week to the Unix timestamp
+    // Add one week to the return date
     $newTimestamp = $timestamp + (7 * 24 * 60 * 60);
 
     // Convert the new timestamp back to the desired date string format
@@ -899,7 +883,7 @@ function bookReturn($rentalId)
     // Update the return_date in the books table
     $query = "UPDATE books SET return_date = ? WHERE book_id = ?";
     $stmt = mysqli_prepare($mysqli, $query);
-    mysqli_stmt_bind_param($stmt, "s", $newReturnDate);
+    mysqli_stmt_bind_param($stmt, "si", $newReturnDate, $bookId);
     $result = mysqli_stmt_execute($stmt);
     mysqli_stmt_close($stmt);
 
@@ -907,6 +891,7 @@ function bookReturn($rentalId)
 
     return $result;
 }
+
 
 // View Books Page
 if (isset($_POST['readBook'])) {
@@ -1188,7 +1173,7 @@ function viewRentedBooks($memberId)
     }
 
     // Use the SQL JOIN to fetch rental information along with associated member and book details
-    $query = "SELECT r.*, m.fullname, b.title, b.thumbnail 
+    $query = "SELECT r.*, m.fullname, b.title, b.thumbnail, b.price
               FROM rental r
               INNER JOIN member m ON r.member_id = m.member_id
               INNER JOIN books b ON r.book_id = b.book_id
@@ -1202,25 +1187,29 @@ function viewRentedBooks($memberId)
         $heading = <<<DELIMITER
             <table>
             <tr>
-                <th> Rental ID </th>
                 <th> Book Cover </th>
                 <th> Title </th>
                 <th> Member Name </th>
                 <th> Return Date </th>
                 <th> Price </th>
+                <th> Status </th>
             </tr>
         DELIMITER;
         $rows = '';
 
         while ($row = mysqli_fetch_assoc($result)) {
+
+            // Check if the return date has passed for each rental
+            $status = ($row['return_date'] < date("Y-m-d")) ? "Returned" : "Outstanding";
+
             $rowHTML = <<<DELIMITER
                 <tr>
-                    <td class="p-5"> {$row['rental_id']} </td>
-                    <td class="p-5"><img src="../img/{$row['thumbnail']}" alt="Book Thumbnail" class="bookCover"></td>
-                    <td class="title p-4"> <p> {$row['title']} </p></td>
+                    <td class="username p-4"><img src="../img/{$row['thumbnail']}" alt="Book Thumbnail" class="bookCover"></td>
+                    <td class="username p-4"> <p> {$row['title']} </p></td>
                     <td class="username p-4"> <p> {$row['fullname']} </p></td>
-                    <td class="p-5"> <p> {$row['return_date']} </p></td>
-                    <td class="p-5"> <p> R {$row['price']} </p></td>
+                    <td class="username p-4"> <p> {$row['return_date']} </p></td>
+                    <td class="username p-4"> <p> R {$row['price']} </p></td>
+                    <td class="username p-4"> <p> {$status} </p></td>
                 </tr>
             DELIMITER;
             $rows .= $rowHTML;
@@ -1240,6 +1229,73 @@ function viewRentedBooks($memberId)
     mysqli_close($mysqli);
 }
 
+if(isset($_POST['suspendGo'])){
+    header("Location: ./suspend.php");
+}
 
+function suspendAccount()
+{
+    // Connect to the database
+    $mysqli = db_connect();
+    if (!$mysqli) {
+        return;
+    }
+
+    // Use the SQL JOIN to fetch rental information along with associated member and book details
+    $query = "SELECT r.*, m.fullname, b.title, b.thumbnail, b.price
+              FROM rental r
+              INNER JOIN member m ON r.member_id = m.member_id
+              INNER JOIN books b ON r.book_id = b.book_id";
+    $result = mysqli_query($mysqli, $query);
+
+    if (mysqli_num_rows($result) > 0) {
+        $heading = <<<DELIMITER
+            <table>
+            <tr>
+                <th> Book Cover </th>
+                <th> Title </th>
+                <th> Member Name </th>
+                <th> Return Date </th>
+                <th> Price </th>
+                <th> Status </th>
+                <th> Action </th>
+            </tr>
+        DELIMITER;
+        $rows = '';
+
+        while ($row = mysqli_fetch_assoc($result)) {
+            // Check if the return date has passed for each rental
+            $status = ($row['return_date'] < date("Y-m-d")) ? "Returned" : "Outstanding";
+            $isSuspendable = (strtotime($row['return_date']) < strtotime("-1 week"));
+
+            $rowHTML = <<<DELIMITER
+                <tr>
+                    <td class="username p-4"><img src="../img/{$row['thumbnail']}" alt="Book Thumbnail" class="bookCover"></td>
+                    <td class="username p-4"> <p> {$row['title']} </p></td>
+                    <td class="username p-4"> <p> {$row['fullname']} </p></td>
+                    <td class="username p-4"> <p> {$row['return_date']} </p></td>
+                    <td class="username p-4"> <p> R {$row['price']} </p></td>
+                    <td class="username p-4"> <p> {$status} </p></td>
+                    <td class="username p-4"> 
+                        {($isSuspendable) ? '<button type="button" class="logInButton p-2">Suspend Account</button>' : ''}
+                    </td>
+                </tr>
+            DELIMITER;
+            $rows .= $rowHTML;
+        }
+
+        $table = <<<DELIMITER
+            {$heading}
+            {$rows}
+            </table>
+        DELIMITER;
+        echo $table;
+    } else {
+        echo 'No rentals found.';
+    }
+
+    mysqli_free_result($result);
+    mysqli_close($mysqli);
+}
 
 ?>

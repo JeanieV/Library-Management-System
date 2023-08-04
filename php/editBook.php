@@ -93,6 +93,8 @@ if (isset($_SESSION['fullname'])) {
                             <td class="p-4"><label for="price" class="labelStyle"> Price: </label></td>
                             <td class="p-4"><input type="text" name="price" class="inputStyle"></td>
                         </tr>
+                        <input type="hidden" name="book_id" value="<?php echo $bookId; ?>">
+
                     </table>
                 </div>
 

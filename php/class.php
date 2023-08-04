@@ -33,18 +33,18 @@ class Librarian
     }
 
     // Update book information in the books table
-    public function updateBook($title, $description, $thumbnail, $author, $genre, $return_date, $availability, $price, $book_id)
-    {
-        $query = "UPDATE books SET title=?, description=?, thumbnail=?, author=?, genre=?, return_date=?, availability=?, price=? WHERE book_id=?";
-        $stmt = mysqli_prepare($this->mysqli, $query);
+    public function updateBook($title, $description, $thumbnail, $author, $genre, $return_date, $availability, $price, $bookId)
+{
+    $query = "UPDATE books SET title=?, description=?, thumbnail=?, author=?, genre=?, return_date=?, availability=?, price=? WHERE book_id=?";
+    $stmt = mysqli_prepare($this->mysqli, $query);
 
-        // Assuming availability and book_id are integers (i for integer type)
-        mysqli_stmt_bind_param($stmt, "ssbsssiii", $title, $description, $thumbnail, $author, $genre, $return_date, $availability, $price, $book_id);
+    // Assuming availability and book_id are integers (i for integer type)
+    mysqli_stmt_bind_param($stmt, "ssbsssiii", $title, $description, $thumbnail, $author, $genre, $return_date, $availability, $price, $bookId);
 
-        $result = mysqli_stmt_execute($stmt);
-        mysqli_stmt_close($stmt);
-        return $result;
-    }
+    $result = mysqli_stmt_execute($stmt);
+    mysqli_stmt_close($stmt);
+    return $result;
+}
 
     // Delete a book from the books table
     public function deleteBook($bookId)

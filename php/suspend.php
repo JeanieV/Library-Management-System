@@ -6,7 +6,6 @@ if (isset($_SESSION['fullname'])) {
     $fullname = $_SESSION['fullname'];
 }
 
-bookUpdate();
 ?>
 
 <!DOCTYPE html>
@@ -15,7 +14,7 @@ bookUpdate();
 <head>
     <meta charset='utf-8'>
     <meta http-equiv='X-UA-Compatible' content='IE=edge'>
-    <title>Update Book Page</title>
+    <title>Suspend Page</title>
     <meta name='viewport' content='width=device-width, initial-scale=1'>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/css/bootstrap.min.css" rel="stylesheet"
         integrity="sha384-rbsA2VBKQhggwzxH7pPCaAqO46MgnOM80zW1RWuH61DGLwZJEdK2Kadq2F9CUG65" crossorigin="anonymous">
@@ -29,7 +28,7 @@ bookUpdate();
 
     <!-- Return Home Button -->
     <form method="POST">
-        <button type="submit" name="returnBookChanges" class="tranBack"><img class="homeButton mx-3 mt-3"
+        <button type="submit" name="returnLibrary" class="tranBack"><img class="homeButton mx-3 mt-3"
                 src="../img/home1.gif" alt="Back to Home Page" title="Back to Home Page"
                 attribution="https://www.flaticon.com/free-animated-icons/home"></button>
     </form>
@@ -40,11 +39,15 @@ bookUpdate();
 
             <form method="POST" class="bookView p-5">
 
-            <?php echo "<h1 class='mb-4'> Update existing books on the system <br> $fullname: </h1>;" ?>
+                <?php echo "<h1 class='mb-4'> $fullname <br>"?>
+                <?php echo "<p class='my-5'>Suspend accounts if book is outstanding for more than a week</p>"; ?>
 
-                <div class="d-flex justify-content-center align-items-center my-4">
-                    <?php viewAllBooks(); ?>
+                <div class="container d-flex justify-content-center align-items-center">
+                    <div class="mt-5 mb-5 mx-5">
+                        <?php suspendAccount(); ?>
+                    </div>
                 </div>
+
 
             </form>
         </div>

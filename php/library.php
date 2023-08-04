@@ -82,6 +82,17 @@ if (isset($_SESSION['fullname'])) {
                             </td>
                         </tr>
 
+                        <tr>
+                            <!-- Suspend Button -->
+                            <td>
+                                <h4 class="p-5">Suspend or Blacklist an account </h4>
+                            </td>
+                            <td>
+                                <button name="suspendGo" type="submit" class="logInButton p-2 mx-5"> View
+                                </button>
+                            </td>
+                        </tr>
+
                     </table>
                 </div>
             </div>
