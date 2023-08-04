@@ -6,7 +6,6 @@ if (isset($_SESSION['fullname'])) {
     $fullname = $_SESSION['fullname'];
 }
 
-bookUpdate();
 ?>
 
 <!DOCTYPE html>

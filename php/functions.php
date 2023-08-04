@@ -673,53 +673,56 @@ function viewAllBooks()
 }
 
 
-function editBookFinal(){
+function editBookFinal()
+{
 
-     // If there is a rental_id present
-     if (isset($_POST['book_id'])) {
-        
+    // If there is a rental_id present
+    if (isset($_POST['book_id'])) {
+
         header("Location: ./editBook.php");
-     }
+    }
 }
 
 
 // Function to update books
 function bookUpdate()
 {
-   
-    if(isset($_POST['book_id'])){
-        // Connect to the database
-        $mysqli = db_connect();
-        if (!$mysqli) {
-            return;
-        }
-
-        // Store the input fields as variables
+    if (isset($_POST['editBooks'])) {
         $bookId = $_POST['book_id'];
-        $title = $_POST['title'];
-        $description = $_POST['description'];
-        $thumbnail = $_POST['thumbnail'];
-        $author = $_POST['author'];
-        $genre = $_POST['genre'];
-        $return_date = $_POST['return_date'];
-        $availability = 1;
-        $price = $_POST['price'];
+    }
 
-        // Create a new instance of the Librarian class
-        $librarian = new Librarian($mysqli);
+    
+    // Connect to the database
+    $mysqli = db_connect();
+    if (!$mysqli) {
+        return;
+    }
 
-        // Call the method from the Librarian class
-        $result = $librarian->updateBook($bookId, $title, $description, $thumbnail, $author, $genre, $return_date, $availability, $price);
+    // Store the input fields as variables
+    $bookId = $_POST['book_id'];
+    $title = $_POST['title'];
+    $description = $_POST['description'];
+    $thumbnail = $_POST['thumbnail'];
+    $author = $_POST['author'];
+    $genre = $_POST['genre'];
+    $return_date = $_POST['return_date'];
+    $availability = 1;
+    $price = $_POST['price'];
 
-        // If the book has been updated
-        if ($result) {
-            echo "Successful!";
-        }
-        else {
-            echo "could not update";
-        }
+    // Create a new instance of the Librarian class
+    $librarian = new Librarian($mysqli);
+
+    // Call the method from the Librarian class
+    $result = $librarian->updateBook($bookId, $title, $description, $thumbnail, $author, $genre, $return_date, $availability, $price);
+
+    // If the book has been updated
+    if ($result) {
+        echo "Successful!";
+    } else {
+        echo "could not update";
     }
 }
+
 
 
 
@@ -1231,7 +1234,7 @@ if (isset($_POST['suspendGo'])) {
     header("Location: ./suspend.php");
 }
 
-
+// Joining tables so that all the information is visible 
 function suspendAccount()
 {
     // Connect to the database
@@ -1307,6 +1310,7 @@ function suspendAccount()
     mysqli_close($mysqli);
 }
 
+// This is a helper function to delete the rental if the suspend button is clicked
 function suspendRental($mysqli, $rentalId)
 {
     // Use the rental_id to remove the rental record from the rental table
@@ -1316,7 +1320,7 @@ function suspendRental($mysqli, $rentalId)
     $result = mysqli_stmt_execute($stmt);
     mysqli_stmt_close($stmt);
 
-    if($result){
+    if ($result) {
         echo '<h3 class="mb-5">You suspended the member! <br> Their Rental has been removed </h3>';
     }
 }

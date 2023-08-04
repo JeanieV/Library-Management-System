@@ -8,9 +8,7 @@ if (isset($_SESSION['fullname'])) {
     $fullname = $_SESSION['fullname'];
 }
 
-if (isset($_SESSION['updateFinalBook'])) {
-    bookUpdate();
-}
+
 
 ?>
 
@@ -44,7 +42,11 @@ if (isset($_SESSION['updateFinalBook'])) {
 
                 <?php echo "<h1 class='mb-4'> $fullname, make a book update: </h1>" ?>
 
-               
+                <?php if (isset($_POST['updateFinalBook'])) {
+                    bookUpdate();
+                    header("Location: ./updateBook.php");
+                }
+                ?>
 
                 <div class="d-flex justify-content-center align-items-center my-4">
                     <table>
@@ -95,9 +97,9 @@ if (isset($_SESSION['updateFinalBook'])) {
 
                     </table>
                 </div>
-               
+
                 <button type="submit" name="updateFinalBook" class="logInButton p-3">Update Book</button>
-                
+
             </form>
         </div>
     </div>
